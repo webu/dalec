@@ -1,0 +1,13 @@
+{% block dalec_list_header %}
+{% endblock dalec_list_header %}
+
+{% block dalec_list_body %}
+    <div class="dalec-list dalec-app-{{ app }} dalec-ct-{{ content_type}} dalec-chan-{{ channel }}" data-dalec="{{ ajax_kwargs }}">
+        {% for object in object_list %}
+            {% include  %}
+        {% endfor %}
+    </div>
+{% endblock dalec_list_body %}
+
+{% block dalec_list_footer %}
+{% endblock dalec_list_footer %}

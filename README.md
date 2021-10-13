@@ -1,4 +1,205 @@
-# django-aggregate-lot-external-contents 🤖
+# django-aggregate-lot-external-contents aka DALEC 🤖
 
-Django Aggregate Lot External Contents (DALEC) is a generic app to aggregate contents from various sources and display it in a generic way.  
-Designed to be customized.
+Django Aggregate Lot External Contents (DALEC) is a generic app to aggregate contents from various
+external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
+generic way independent of the source.
+
+It's designed to be customized / extended to fit your needs.
+
+## Installation
+
+You **MUST** use a DB supporting 
+django's [`JSONField`](https://docs.djangoproject.com/fr/3.2/ref/models/fields/#jsonfield)
+
+You **SHOULD NOT** install this app but you **SHOULD** install one (or more) of it's children 
+(see [external sources supported](#External-sources-supported)). eg:
+
+`pip install dalec-gitlab dalec-nextcloud`
+
+Then, add `dalec`, `dalec_prime` and dalek's children to `INSTALLED_APPS` in `settings.py`:
+
+```python
+# settings.py
+
+INSTALLED_APPS = [
+    # …
+    "dalec",
+    "dalec_prime",  # if you want to use your own Content model, does not add it
+    "dalec_gitlab",
+    "dalec_nextcloud",
+    # …
+]
+```
+
+## Usage
+
+Each dalec's child app will probably need some specific configuration to retrieve external contents 
+(eg: token or login/password). Please refer to this dalec's child app configuration section first.
+
+Now your dalec's child app is configured, you can display it's X last contents somewhere in a 
+template by using the templatag `dalec`:
+
+```django
+{% load dalec %}
+
+{% dalec app content_type [template=None] [channel=None] [channel_obj=None] [**channelKwargs] %}
+
+real exemples:
+
+Retrieves last gitlab issues for a specific user:
+{% dalec "gitlab" "issue" channel="user" user="doctor-who" %}
+
+Retrieves recent gitlab activity for a group:
+{% dalec "gitlab" "activity" channel="group" group='companions' %}
+
+Retrieves recent gitlab activity for a project:
+{% dalec "gitlab" "activity" channel="group" project='tardis' %}
+
+Retrieves recent gitlab issues for a project:
+{% dalec "gitlab" "issue" channel="group" project='tardis' %}
+
+Retrieves recent gitlab issues for a project and give the channel_object to register:
+{% dalec "gitlab" "issue" channel="group" project='tardis' channel_obj=tardis_obj %}
+```
+
+## Configuration
+
+This app have general settings which can be erased for all of it's children and sometimes by 
+content type.
+
+* General setting format : `DALEC_SOMETHING`
+* overided child version (gitlab for exemple): `DALEC_GITLAB_SOMETHING`
+* overided content type version (gitlab's issues for exemple): `DALEC_GITLAB_ISSUE_SOMETHING`
+
+### DALEC_NB_CONTENTS_KEPT
+
+* * *default*: `10`
+* per child setting: yes
+* per child's type setting: yes
+
+Set the number of contents to keep by type. Oldest will be purged to keep only the last X contents 
+of each channel and type.
+`0` means "no limit".
+
+### DALEC_AJAX_REFRESH
+
+* *default*: `True`
+* per child setting: yes
+* per child's type setting: yes
+
+If `True`, when an user display a channel contents, an ajax requests is sent to refresh content. 
+It's usefull if you do not want to use a cron task and/or need to get always the last contents.
+
+### DALEC_CACHE_DELAY
+
+* *default*: `900`
+* per child setting: yes
+* per child's type setting: yes
+
+Number of seconds before an ajax request sends a new query to the instance providing instance.
+
+### DALEC_CONTENT_MODEL
+
+* *default*: `"dalec_prime.Content"`
+* per child setting: no
+* per child's type setting: no
+
+Concrete model to use to store contents. If you do not want to use the default one,
+you should not add `dalec.prime` in `INSTALLED_APPS` to avoid to load a useless model
+and have an empty table in your data base.
+
+### DALEC_CONTENT_FETCH_HISTORY_MODEL
+
+* *default*: `"dalec_prime.ContentFetchHistory"`
+* per child setting: no
+* per child's type setting: no
+
+Same as `DALEC_CONTENT_MODEL` but for the `ContentFetchHistory` model.
+
+### DALEC_CSS_FRAMEWORK
+
+* *default*: `None`
+* per child setting: yes
+* per child's type setting: no
+
+Name of the (S)CSS framework you use on your website. Supported valued are:
+
+* `None`: only dalec classes will be added. HTML elements are sementics.
+
+Future supported values could be:
+
+* materialize
+* bulma
+* bootstrap
+* semantic-ui
+
+## Customization
+
+### Styles
+
+No styles are included inside dalec who must remains pure with no feelings. 
+But some SCSS framework may be supported. Please refer to `DALEC_CSS_FRAMEWORK` setting.
+
+### Templates
+
+You should always inherit from the default templates and use defined blocks to customise it.
+
+#### List
+
+Each app can have it's own "list" template but if it doesn't, a default one will be used. 
+In priority order:
+
+* `dalec/<childappname>/<contenttype>-<channel>-list.html`
+* `dalec/<childappname>/<contenttype>-list.html`
+* `dalec/<childappname>/list.html`
+* `dalec/default/list.html`
+
+#### Item
+
+Each content types can have it's own template. Those filenames will be tried:
+
+* `dalec/<childappname>/<contenttype>-<channel>-item.html`
+* `dalec/<childappname>/<contenttype>-item.html`
+* `dalec/<childappname>/item.html`
+* `dalec/default/item.html`
+
+For "gitlab" app, "issue" content type and "project" channel we will try :
+
+* `dalec/gitlab/issue-project-item.html`
+* `dalec/gitlab/issue-item.html`
+* `dalec/gitlab/item.html`
+* `dalec/default/item.html`
+
+### Models
+
+Model used to store contents is defined by the setting `DALEC_CONTENT_MODEL` which has the
+default value `"dalec_prime.Content"`.
+If you want to use your own model, in your `settings.py`:
+
+* remove `dalec.prime` from `INSTALLED_APPS`
+* set the setting `DALEC_CONTENT_MODEL` with `<yourapp>.<yourModel>`
+
+## External sources supported
+
+* 🦝 [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-gitlab):
+  get issues and activities from a gitlab instance
+* ☁ [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-nextcloud):
+  get events and activities from a nextcloud instance
+* 🗣 [https://dev.webu.coop/w/i/dalec-discourse/](dalec-discourse):
+  get last messages or topics from a discourse instance
+* 🔗 [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-openproject):
+  get tasks from an openproject instance
+
+## External sources which could be nice to support
+
+* 🌍 dalec-wikimedia: get last pages from a wikimedia instance
+* 📅 dalec-caldav: get events and tasks from a caldav instance (eg: nextcloud agenda)
+* 📂 dalec-webdav: get lastmodified files from a webdav instance (eg: nextcloud files)
+* 📰 dalec-feedparser: get contents from atom and rss feeds
+* 📫 dalec-imap: get emails from imap instance
+* 🐥 dalec-mastodon: get toots from a mastodon instance
+* 📺 dalec-peertube: get last uploaded videos from a peertube instance
+* 🐱 dalec-github: get issues, pull-requests, activity from github
+* 🐦 dalec-twitter: get tweets from twitter
+* 🎞 dalec-youtube: get last uploaded videos from youtube
+* 🎥 dalec-imdb: get last movies from imdb
