@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
-class ContentFetchHistoryBase(models.Model):
+class FetchHistoryBase(models.Model):
     """
     Stores fetch queries history for a specific dalec's app [+ channel [+ channel obj]]
     """
@@ -34,16 +34,11 @@ class ContentFetchHistoryBase(models.Model):
         null=True,
         blank=True,
     )
-    dj_channel_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    dj_channel_id = models.PositiveIntegerField()
-    dj_channel_obj = GenericForeignKey(
-        'dj_channel_content_type', 'dj_channel_id',
-        for_concrete_model=False,
-        verbose_name=_("related object"),
-        blank=True,
+    channel_object = models.CharField(
+        _("channel app object id"),
+        max_length=50,
         null=True,
-        help_text=_("The django's model's instance which is concerned."
-                    "(eg. could be an instance of model `Project` for dalec-gitlab)")
+        blank=True,
     )
 
     class Meta:
@@ -58,7 +53,7 @@ class ContentBase(models.Model):
     """
     Stores generic contents retrieved from an external source
     """
-    last_updated_dt = models.DateTimeField(
+    last_update_dt = models.DateTimeField(
         _("last update datetime (on external source)"),
         auto_now=False,
         auto_now_add=False,
@@ -66,7 +61,7 @@ class ContentBase(models.Model):
         null=False,
         index=True,
     )
-    created_dt = models.DateTimeField(
+    creation_dt = models.DateTimeField(
         _("created datetime (on external source)"),
         auto_now=False,
         auto_now_add=False,
@@ -88,6 +83,12 @@ class ContentBase(models.Model):
     )
     channel = models.CharField(
         _("channel"),
+        max_length=50,
+        null=True,
+        blank=True,
+    )
+    channel_object = models.CharField(
+        _("channel app object id"),
         max_length=50,
         null=True,
         blank=True,
@@ -124,6 +125,13 @@ class ContentBase(models.Model):
         help_text=_("The django's model's instance which is concerned "
                     "(eg. could be an instance of model `Issue` for dalec-gitlab)")
     )
+    content_id = models.CharField(
+        _("app's content id"),
+        max_length=255,
+        null=False,
+        blank=False,
+        help_text=_("ID of the content inside the external app.")
+    )
     content_data = models.JSONField(
         encoder="django.core.serializers.json.DjangoJSONEncoder"
     )
@@ -131,8 +139,8 @@ class ContentBase(models.Model):
     class Meta:
         verbose_name = _("Content")
         verbose_name_plural = _("Contents")
-        order_by = ('-last_updated_dt', )
-        get_latest_by = 'last_updated_dt'
+        order_by = ('-last_update_dt', )
+        get_latest_by = 'last_update_dt'
         abstract = True
         index_together = (
             ('app', 'content_type', 'channel'),

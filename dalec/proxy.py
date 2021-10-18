@@ -1,96 +1,202 @@
+from django.db.models import Model
+from django.utils import timezone
 from django.utils.functional import classproperty
+from typing import Union, List, Dict
 from dalec import settings as app_settings
 
+
+class ProxyPool:
+    _proxies = {}
+
+    @classmethod
+    def register(cls, proxy_class):
+        if not issubclass(proxy_class, Proxy):
+            raise ValueError("your proxyClass must extends dalec.proxy.Proxy")
+        if not proxy_class.app:
+            raise ValueError("your proxyClass must set it's app name in its `app` attribute")
+        if proxy_class.app in cls._proxies and cls._proxies[proxy_class.app] != proxy_class:
+            raise ValueError("A proxy is already registered for app \"%s\"" % proxy_class.app)
+        cls._proxies[proxy_class.app] = proxy_class
+
+    @classmethod
+    def get(cls, app):
+        if app not in cls._proxies:
+            raise ValueError("No proxy registered for app %s" % app)
+        return cls._proxies[app]
+
+
+class ProxyMeta(type):
+    """
+    Meta class to autoregister Proxy class when an app inherit from our Proxy abstact class.
+    """
+
+    def __new__(cls, name, bases, attrs):
+        if not bases:
+            return super().__new__(cls, name, bases, attrs)
+        if not attrs.get('app'):
+            raise ValueError("your proxyClass must set it's app name in its `app` attribute")
+        proxy_class = super().__new__(cls, name, bases, attrs)
+        ProxyPool.register(proxy_class)
+        return proxy_class
+
+
 class Proxy:
+    """
+    Abstact Proxy Class that dalec's children must inherit to define a proxy class specific
+    for an app.
+    """
     app = None
 
     @classproperty
-    def fetch_history_model(cls):
-        return apps.get_model(app_settings.CONTENT_FETCH_HISTORY_MODEL)
+    def content_model(cls) -> Model:
+        """
+        class attribute to easely get the Content model
+        """
+        return apps.get_model(app_settings.CONTENT_MODEL)
 
-    def __init__(self, content_type=None, channel=None, channel_object=None):
-        if not self.app:
-            # TODO : la récupérer automatiquement en fonction du path de la classe qui
-            # hérite de celle-ci
-            raise ValueError("app must be defined in your Proxy Class")
-        # let this to None if same proxy can be used to retrieve all content_types
-        self.content_type= content_type
-        # let this to None if same proxy can be used to retrieve all channel
-        self.channel= channel
-        # let this to None if same proxy can be used to retrieve all channel_object
-        self.channel_object= channel_object
+    @classproperty
+    def fetch_history_model(cls) -> Model:
+        """
+        class attribute to easely get the FetchHistory model
+        """
+        return apps.get_model(app_settings.FETCH_HISTORY_MODEL)
 
-    def refresh(self, content_type, channel, channel_object):
+    def refresh(
+            self, content_type:str, channel:str, channel_object:str, force:bool=False,
+            dj_channel_obj:Any=None
+        ) -> Union(tuple(int, int, int), bool):
         """
         Fetch updated contents from the source and update/create it into the DB.
         Then, if some contents has been created, delete oldests contents which are not anymore
         required
-        returns number of created, updated and deleted objects
+        returns number of created, updated and deleted objects or False if cache not yet expired
         """
-        if self.content_type and not content_type:
-            content_type = self.content_type
-        elif self.content_type and self.content_type != content_type:
-            raise ValueError("content_type must be the same in proxy and refresh.")
-        if self.channel and not channel:
-            channel = self.channel
-        elif self.channel and self.channel != channel:
-            raise ValueError("channel must be the same in proxy and refresh.")
-        if self.channel_object and not channel_object:
-            channel_object = self.channel_object
-        elif self.channel_object and self.channel_object != channel_object:
-            raise ValueError("channel_object must be the same in proxy and refresh.")
+        dalec_kwargs = {
+            'content_type': content_type, 'channel': channel, 'channel_object': channel_object
+        }
+        last_fetch = None if force else self.get_last_fetch(**dalec_kwargs)
+        if last_fetch:
+            too_old = timezone.now() - timedelta(seconds=app_settings.TTL)
+            if last_fetch.last_fetch_dt > too_old :
+                # last request is still too recent: we do not spam the external app
+                return False
+
+        contents = self._fetch(**dalec_kwargs)
+        if not contents:
+            return 0, 0, 0
+
+        nb_updated = 0
+        to_update = self.get_contents_queryset(**dalec_kwargs).filter(content_id__in=contents.keys())
+        for instance in to_update:
+            new_content = contents.pop(content.content_id)
+            res = self.update_content(instance=content, new_content=new_content)
+            if res:
+                nb_updated += 1
 
         nb_created = 0
-        nb_updated = 0
-        nb_deleted = 0
+        for new_content in contents.values():
+            self.create_content(new_content=new_content, dj_channel_obj=dj_channel_obj,
+                                **dalec_kwargs)
+            if res:
+                nb_created += 1
 
-        nb_created, nb_updated = self._fetch(content_type, channel, channel_object)
-
-        if not nb_created:
-            return nb_created, nb_updated, nb_deleted
-
-        # TODO Delete
+        # exterminate the oldest ones if some new contents have been created
+        nb_deleted = (0 if not nb_created
+                      else self.exterminate(**dalec_kwargs))
 
         return nb_created, nb_updated, nb_deleted
 
-    def _fetch(content_type, channel, channel_object):
+    def create_content(
+        self, content_type:str, channel:str, channel_object:str, content:dict,
+        dj_channel_obj:Any=None
+    ) -> bool:
         """
-        Fetch updated contents from the source and update/create it into the DB.
-        returns number of created and updated objects
+        Create a new instance of content and returns True if it has beend created
+        """
+        instance = self.content_model(
+            creation_dt=content['creation_dt'],
+            last_update_dt=content['last_update_dt'],
+            app=self.app,
+            content_type=content_type,
+            channel=channel,
+            channel_object=channel_object,
+            dj_channel_obj=dj_channel_obj,
+            content_id=content['id'],
+            content_data=content,
+        )
+        instance.save()
+        return True
+
+    def update_content(self, instance:Model, new_content:dict) -> bool:
+        """
+        Update an existing instance of content and returns True if it really need update
+        """
+        if instance.content_data == content:
+            return False
+        update_fields = ["content_data"]
+        instance.content_data = content
+        if instance.creation_dt != content['creation_dt']:
+            instance.creation_dt = content['creation_dt']
+            update_fields.append("creation_dt")
+        if instance.last_update_dt != content['last_update_dt']:
+            instance.last_update_dt = content['last_update_dt']
+            update_fields.append("last_update_dt")
+        instance.save(update_fields=update_fields)
+        return True
+
+    def _fetch(content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
+        """
+        Fetch updated contents from the source and return it as a dict of dict:
+        main dict keys MUST be the app's content id, and value must be the content representation
+        with at least three required attrs:
+            id: ID of the content inside the external app
+            last_update_dt: last update datetime inside the external app
+            creation_dt: creation datetime inside the external app
         """
         raise NotImplementedError(
             "You MUST implement your own _feth method depending your external source"
         )
 
-    def exterminate(self, content_type, channel, channel_object):
+    def get_contents_queryset(self, content_type:str, channel:str, channel_object:str):
+        return self.content_model.objects.filter(
+            app=self.app,
+            content_type=content_type,
+            channel=channel,
+            channel_object=channel_object
+        )
+
+    def exterminate(self, content_type:str, channel:str, channel_object:str) -> int:
         """
         deletes oldests entries (depending on setting DALEC_NB_CONTENTS_KEPT)
         returns number of entries deleted
         """
-        # TODO
+        model_label = self.content_model._meta.label
+        nb_to_keep = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
+        qs = self.get_contents_queryset(content_type, channel, channel_object)
+        to_keep = qs.order_by('-last_update_dt').values_list("pk")[0:nb_to_keep]
+        result = qs.exclude(pk__in=to_keep).delete()
+        return result[1].get(model_label, 0)
 
-    def get_last_fetch(self, content_type, channel, channel_object):
+    def set_last_fetch(self, content_type:str, channel:str, channel_object:str, last_fetch=False):
+        if last_fetch is None:
+            last_fetch = self.get_last_fetch(content_type, channel, channel_object)
+        elif not last_fetch:
+            last_fetch = self.fetch_history_model(
+                content_type=content_type,
+                channel=channel,
+                channel_object=channel_object,
+            )
+        last_fetch.last_fetch_dt = timezone.now()
+        last_fetch.save()
+
+    def get_last_fetch(self, content_type:str, channel:str, channel_object:str):
         qs = self.fetch_history_model.objects.filter(app=self.app)
-
         if content_type:
             qs = qs.filter(content_type=content_type)
-
         if channel:
             qs = qs.filter(channel=channel)
-
         if channel_object:
-            dj_channel_content_type = ContentType.objects.get_for_model(channel_object)
-            qs = qs.filter(dj_channel_content_type__pk=channel_object_type.pk,
-                           dj_channel_id=channel_object.pk)
+            qs = qs.filter(channel_object=channel_object)
         else:
-            qs = qs.filter(dj_channel_id__isnull=True)
+            qs = qs.filter(channel_object__isnull=True)
         return qs.latest()
-
-
-def get_proxy(content_type=None, channel=None, channel_object=None):
-    raise NotImplementedError("This is just an exemple. Please implement your own get_proxy function.")
-    return Proxy(
-        content_type=content_type,
-        channel=channel,
-        channel_object=channel_object
-    )

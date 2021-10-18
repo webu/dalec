@@ -6,6 +6,32 @@ generic way independent of the source.
 
 It's designed to be customized / extended to fit your needs.
 
+## Concepts
+
+Contents are categorized via :
+
+* `app`: the app which is requested to retrieve contents 
+  (eg. `gitlab`)
+* `content_type`: the type of contents we want to retrieve from this app 
+  (eg. `issue`, `activity`, `commit`, `merge requests`…)
+* `channel`: some apps can be requested to get a more or less filtered contents. 
+  For exemple, in Gitlab, it's called "scope". You can retrieve issues from:
+  * the whole site (`channel=None` and `channel_obj=None` for us)
+  * a specific group (`channel="group"` and `channel_obj="<gitlab_group_id>"`)
+  * a specific project (`channel="project"` and `channel_obj="<gitlab_project_id>"`)
+  * a specific author (`channel="author"` and `channel_obj="<gitlab_user_id>"`)
+  * a specific assignee (`channel="assignee"` and `channel_obj="<gitlab_user_id>"`)
+  * etc.
+* `channel_obj`: the ID (for the app requested) of the channel's related object
+
+Before you ask: yes, some contents can be duplicated (eg. an issue from the "group" channel 
+could be duplicated in the "project" channel). It's normal and **wanted**. Remember : the purpose
+of this app is to retrieve and display the `last N contents of something`. If the issue we are 
+talking about is in the `last N issues of project "cybermen"`, it does not mean it's also in 
+`the last N issues of group "dr-who-best-friends"`. To manage different timelines for each channel,
+and keep a KISS Model, we need those duplicates.
+
+
 ## Installation
 
 You **MUST** use a DB supporting 
@@ -42,24 +68,24 @@ template by using the templatag `dalec`:
 ```django
 {% load dalec %}
 
-{% dalec app content_type [template=None] [channel=None] [channel_obj=None] [**channelKwargs] %}
+{% dalec app content_type [template=None] [channel=None] [channel_object=None] [**channelKwargs] %}
 
 real exemples:
 
 Retrieves last gitlab issues for a specific user:
-{% dalec "gitlab" "issue" channel="user" user="doctor-who" %}
+{% dalec "gitlab" "issue" channel="user" channel_object="doctor-who" %}
 
 Retrieves recent gitlab activity for a group:
-{% dalec "gitlab" "activity" channel="group" group='companions' %}
+{% dalec "gitlab" "activity" channel="group" channel_object='companions' %}
 
 Retrieves recent gitlab activity for a project:
-{% dalec "gitlab" "activity" channel="group" project='tardis' %}
+{% dalec "gitlab" "activity" channel="project" channel_object='tardis' %}
 
 Retrieves recent gitlab issues for a project:
-{% dalec "gitlab" "issue" channel="group" project='tardis' %}
+{% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
 
 Retrieves recent gitlab issues for a project and give the channel_object to register:
-{% dalec "gitlab" "issue" channel="group" project='tardis' channel_obj=tardis_obj %}
+{% dalec "gitlab" "issue" channel="project" channel_object='tardis' dj_channel_obj=tardis_obj %}
 ```
 
 ## Configuration
@@ -90,7 +116,7 @@ of each channel and type.
 If `True`, when an user display a channel contents, an ajax requests is sent to refresh content. 
 It's usefull if you do not want to use a cron task and/or need to get always the last contents.
 
-### DALEC_CACHE_DELAY
+### DALEC_TTL
 
 * *default*: `900`
 * per child setting: yes
@@ -108,13 +134,13 @@ Concrete model to use to store contents. If you do not want to use the default o
 you should not add `dalec.prime` in `INSTALLED_APPS` to avoid to load a useless model
 and have an empty table in your data base.
 
-### DALEC_CONTENT_FETCH_HISTORY_MODEL
+### DALEC_FETCH_HISTORY_MODEL
 
-* *default*: `"dalec_prime.ContentFetchHistory"`
+* *default*: `"dalec_prime.FetchHistory"`
 * per child setting: no
 * per child's type setting: no
 
-Same as `DALEC_CONTENT_MODEL` but for the `ContentFetchHistory` model.
+Same as `DALEC_CONTENT_MODEL` but for the `FetchHistory` model.
 
 ### DALEC_CSS_FRAMEWORK
 
