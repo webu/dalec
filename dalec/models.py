@@ -101,8 +101,10 @@ class ContentBase(models.Model):
         verbose_name=_("related object"),
         blank=True,
         null=True,
-        help_text=_("The django's model's instance which is concerned."
-                    "(eg. could be an instance of model `Project` for dalec-gitlab)")
+        help_text=_(
+            "The django's model's instance which is concerned."
+            "(eg. could be an instance of model `Project` "
+            "for app=gitlab, content_type=issue, channel=project)")
     )
     dj_content_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     dj_content_id = models.PositiveIntegerField()

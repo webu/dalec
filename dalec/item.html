@@ -1,0 +1,7 @@
+<div class="dalec-item dalec-app-{{ object.app }} dalec-ct-{{ object.content_type}} dalec-chan-{{ object.channel }}">
+    {% if object.dj_content_obj %}
+        {{ object.dj_content_obj }}
+    {% else %}
+        {{ object.content_id }}
+    {% endif %}
+</div>
