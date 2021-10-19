@@ -93,15 +93,6 @@ class ContentBase(models.Model):
         null=True,
         blank=True,
     )
-    dj_author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        verbose_name=_("author"),
-        on_delete=models.SET_NULL,
-        related_name="dalec_contents",
-        blank=True,
-        null=True,
-        help_text=_("The django's user instance who is concerned.")
-    )
     dj_channel_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     dj_channel_id = models.PositiveIntegerField()
     dj_channel_obj = GenericForeignKey(

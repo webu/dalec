@@ -4,6 +4,7 @@ from django.utils.module_loading import import_string
 from django.template.loader import select_template
 from django.views.generic import TemplateView
 from dalec import settings as app_settings
+from dalec.proxy import ProxyPool
 
 
 class FetchContent(ListView):
@@ -12,27 +13,45 @@ class FetchContent(ListView):
     def model(cls):
         return apps.get_model(app_settings.CONTENT_MODEL)
 
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(self, *args, **kwargs)
+        qs.filter(app=self.dalec_app, content_type=self.dalec_content_types)
+        if not self.dalec_channel:
+            qs = qs.filter(channel__isnull=True)
+        else:
+            qs = qs.filter(channel=self.dalec_channel, channel_object=self.dalec_channel_object, )
+        return qs
+
     def get_template_names(self):
         kwargs = {"app": self.dalec_app, "content_type": self.dalec_content_type}
-        tpl_names = [
+        tpl_names = []
+        tpl = self.request.GET.get('template')
+        if tpl:
+            tpl_names.append("dalec/%(app)s/%(tpl)s-list.html" % {**kwargs, "tpl": tpl}, )
+        if self.dalec_channel:
+            kwargs["channel"] = self.dalec_channel
+            tpl_names.append("dalec/%(app)s/%(content_type)s-%(channel)s-list.html" % kwargs)
+        tpl_names += [
             "dalec/%(app)s/%(content_type)s-list.html" % kwargs,
             "dalec/%(app)s/list.html" % kwargs,
             "dalec/default/list.html",
         ]
-        if self.channel:
-            kwargs["channel"] = self.dalec_channel
-            tpl_names.insert(0, "dalec/%(app)s/%(content_type)s-%(channel)s-list.html" % kwargs)
         return tpl_names
 
     def get_item_template(self):
-        tpl_names = [
+        kwargs = {"app": self.dalec_app, "content_type": self.dalec_content_type}
+        tpl_names = []
+        tpl = self.request.GET.get('template')
+        if tpl:
+            tpl_names.append("dalec/%(app)s/%(tpl)s-item.html" % {**kwargs, "tpl": tpl}, )
+        if self.dalec_channel:
+            kwargs["channel"] = self.dalec_channel
+            tpl_names.append("dalec/%(app)s/%(content_type)s-%(channel)s-item.html" % kwargs)
+        tpl_names += [
             "dalec/%(app)s/%(content_type)s-item.html" % kwargs,
             "dalec/%(app)s/item.html" % kwargs,
             "dalec/default/item.html",
         ]
-        if self.channel:
-            kwargs["channel"] = self.dalec_channel
-            tpl_names.insert(0, "dalec/%(app)s/%(content_type)s-%(channel)s-item.html" % kwargs)
         template = select_template(tpl_names)
         return template.name
 
@@ -47,23 +66,14 @@ class FetchContent(ListView):
                 "app": self.dalec_app,
                 "channel": self.dalec_channel,
                 "content_type": self.dalec_content_type,
-                "channel_object": (
-                    None if not self.channel_object
-                    else ("%s.%s" % (self.channel_object._meta.model_nameapp_label,
-                                     self.channel_object._meta.model_name),
-                          self.channel_object.pk)
+                "channel_object": self.dalec_channel_object,
             })
         })
         self.refresh_content()
         return context
 
     def refresh_content(self):
-        get_client = import_string('dalec_%(app)s.proxy.get_proxy' % app)
-        proxy = self.get_proxy(
-            self.dalec_content_type,
-            self.dalec_channel,
-            self.dalec_channel_object
-        )
+        proxy = ProxyPool.get(self.app)
         return proxy.refresh(
             self.dalec_content_type,
             self.dalec_channel,

@@ -11,17 +11,34 @@ class ProxyPool:
     @classmethod
     def register(cls, proxy_class):
         if not issubclass(proxy_class, Proxy):
-            raise ValueError("your proxyClass must extends dalec.proxy.Proxy")
+            raise ValueError(
+                "Your proxyClass must extends dalec.proxy.Proxy"
+            )
         if not proxy_class.app:
-            raise ValueError("your proxyClass must set it's app name in its `app` attribute")
+            raise ValueError(
+                "Your proxyClass must set it's app name in its `app` attribute"
+            )
         if proxy_class.app in cls._proxies and cls._proxies[proxy_class.app] != proxy_class:
-            raise ValueError("A proxy is already registered for app \"%s\"" % proxy_class.app)
+            raise ValueError(
+                "A proxy is already registered for app \"{app}\"".format(proxy_class.app)
+            )
         cls._proxies[proxy_class.app] = proxy_class
 
     @classmethod
-    def get(cls, app):
+    def get(cls, app, autoload=True):
         if app not in cls._proxies:
-            raise ValueError("No proxy registered for app %s" % app)
+            if autoload:
+                # try to load the proxy module from dalec_<app>.
+                try:
+                    import_string('dalec_%(app)s.proxy' % app)
+                except ImportError:
+                    raise ValueError((
+                        "No proxy registered for app {app} and "
+                        "impossible to autoload dalec_{app}.proxy"
+                    ).format(app=app))
+                else:
+                    return cls.get(app, autoload=False)
+            raise ValueError("No proxy registered for app {app}".format(app=app))
         return cls._proxies[app]
 
 

@@ -229,3 +229,11 @@ If you want to use your own model, in your `settings.py`:
 * 🐦 dalec-twitter: get tweets from twitter
 * 🎞 dalec-youtube: get last uploaded videos from youtube
 * 🎥 dalec-imdb: get last movies from imdb
+
+## Manage a new external source
+
+If you want to add a specific external source, you just have to extends `dalec.proxy.Proxy`
+and override it's `_fetch` method.
+
+To create a dalec child (a proper way), you should create a new django app with the name pattern
+`dalec_<yourExternalSourceUname>`
