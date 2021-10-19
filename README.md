@@ -59,6 +59,8 @@ INSTALLED_APPS = [
 
 ## Usage
 
+Add `dalec/main.js` inside templates where you need to use the dalec. 
+
 Each dalec's child app will probably need some specific configuration to retrieve external contents 
 (eg: token or login/password). Please refer to this dalec's child app configuration section first.
 
@@ -94,14 +96,14 @@ This app have general settings which can be erased for all of it's children and 
 content type.
 
 * General setting format : `DALEC_SOMETHING`
-* overided child version (gitlab for exemple): `DALEC_GITLAB_SOMETHING`
+* overided child version (it's app name, like gitlab for exemple): `DALEC_GITLAB_SOMETHING`
 * overided content type version (gitlab's issues for exemple): `DALEC_GITLAB_ISSUE_SOMETHING`
 
 ### DALEC_NB_CONTENTS_KEPT
 
 * * *default*: `10`
-* per child setting: yes
-* per child's type setting: yes
+* per child app setting: yes
+* per child app's content type setting: yes
 
 Set the number of contents to keep by type. Oldest will be purged to keep only the last X contents 
 of each channel and type.
@@ -110,8 +112,8 @@ of each channel and type.
 ### DALEC_AJAX_REFRESH
 
 * *default*: `True`
-* per child setting: yes
-* per child's type setting: yes
+* per child app setting: yes
+* per child app's content type setting: yes
 
 If `True`, when an user display a channel contents, an ajax requests is sent to refresh content. 
 It's usefull if you do not want to use a cron task and/or need to get always the last contents.
@@ -119,16 +121,16 @@ It's usefull if you do not want to use a cron task and/or need to get always the
 ### DALEC_TTL
 
 * *default*: `900`
-* per child setting: yes
-* per child's type setting: yes
+* per child app setting: yes
+* per child app's content type setting: yes
 
 Number of seconds before an ajax request sends a new query to the instance providing instance.
 
 ### DALEC_CONTENT_MODEL
 
 * *default*: `"dalec_prime.Content"`
-* per child setting: no
-* per child's type setting: no
+* per child app setting: no
+* per child app's content type setting: no
 
 Concrete model to use to store contents. If you do not want to use the default one,
 you should not add `dalec.prime` in `INSTALLED_APPS` to avoid to load a useless model
@@ -137,20 +139,34 @@ and have an empty table in your data base.
 ### DALEC_FETCH_HISTORY_MODEL
 
 * *default*: `"dalec_prime.FetchHistory"`
-* per child setting: no
-* per child's type setting: no
+* per child app setting: no
+* per child app's content type setting: no
 
 Same as `DALEC_CONTENT_MODEL` but for the `FetchHistory` model.
 
 ### DALEC_CSS_FRAMEWORK
 
 * *default*: `None`
-* per child setting: yes
-* per child's type setting: no
+* per child app setting: yes
+* per child app's content type setting: no
 
-Name of the (S)CSS framework you use on your website. Supported valued are:
+Name of the (S)CSS framework you use on your website. It changes the default templates used to 
+display contents. Templates are priorized in this order (`css_framework` versions only used if 
+you set a value to `DALEC_CSS_FRAMEWORK`):
 
-* `None`: only dalec classes will be added. HTML elements are sementics.
+* `dalec/%(app)s/%(tpl)s-list.html`: only if you use a specific template, see templatags `dalec`
+* `dalec/%(app)s/%(css_framework)s/%(content_type)s-%(channel)s-list.html`
+* `dalec/%(app)s/%(content_type)s-%(channel)s-list.html`
+* `dalec/%(app)s/%(css_framework)s/%(content_type)s-list.html`
+* `dalec/%(app)s/%(content_type)s-list.html`
+* `dalec/%(app)s/%(css_framework)s/list.html`
+* `dalec/%(app)s/list.html`
+* `dalec/default/%(css_framework)s/list.html`
+* `dalec/default/list.html` 
+
+Supported valued are:
+
+* `None`: only dalec classes and data will be added. HTML elements are sementics. Templates are the default ones.
 
 Future supported values could be:
 

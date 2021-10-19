@@ -1,4 +1,10 @@
-<div class="dalec-item dalec-app-{{ object.app }} dalec-ct-{{ object.content_type}} dalec-chan-{{ object.channel }}">
+<div class="dalec-item"
+    data-app="{{ object.app }}" data-content-type="{{ object.content_type}}"
+    {% if channel %}
+        data-channel="{{ channel }}"
+        data-channel-object="{{ channel_object }}"
+    {% endif %}
+>
     {% if object.dj_content_obj %}
         {{ object.dj_content_obj }}
     {% else %}
