@@ -5,9 +5,11 @@
         data-channel-object="{{ channel_object }}"
     {% endif %}
 >
-    {% if object.dj_content_obj %}
-        {{ object.dj_content_obj }}
-    {% else %}
-        {{ object.content_id }}
-    {% endif %}
+    {% block item_content %}
+        {% if object.dj_content_obj %}
+            {{ object.dj_content_obj }}
+        {% else %}
+            {{ object.content_id }}
+        {% endif %}
+    {% endblock %}
 </div>

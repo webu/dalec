@@ -1,0 +1,4 @@
+{% extends "dalec/default/item.html" %}
+{% block item_content %}
+    {{ object.creation_dt|date:"TIME_FORMAT" }}
+{% endblock %}

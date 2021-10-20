@@ -1,7 +1,12 @@
+from datetime import timedelta
+from typing import Any, Union, Dict
+
+from django.apps import apps
 from django.db.models import Model
 from django.utils import timezone
-from django.utils.functional import classproperty
-from typing import Union, List, Dict
+from django.utils.decorators import classproperty
+from django.utils.module_loading import import_string
+
 from dalec import settings as app_settings
 
 
@@ -98,21 +103,24 @@ class Proxy:
                 # last request is still too recent: we do not spam the external app
                 return False
 
-        contents = self._fetch(**dalec_kwargs)
+        contents = self._fetch(
+            app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type),
+            **dalec_kwargs
+        )
         if not contents:
             return 0, 0, 0
 
         nb_updated = 0
         to_update = self.get_contents_queryset(**dalec_kwargs).filter(content_id__in=contents.keys())
         for instance in to_update:
-            new_content = contents.pop(content.content_id)
-            res = self.update_content(instance=content, new_content=new_content)
+            new_content = contents.pop(instance.content_id)
+            res = self.update_content(instance=instance, new_content=new_content)
             if res:
                 nb_updated += 1
 
         nb_created = 0
         for new_content in contents.values():
-            self.create_content(new_content=new_content, dj_channel_obj=dj_channel_obj,
+            self.create_content(content=new_content, dj_channel_obj=dj_channel_obj,
                                 **dalec_kwargs)
             if res:
                 nb_created += 1
@@ -148,20 +156,20 @@ class Proxy:
         """
         Update an existing instance of content and returns True if it really need update
         """
-        if instance.content_data == content:
+        if instance.content_data == new_content:
             return False
         update_fields = ["content_data"]
-        instance.content_data = content
-        if instance.creation_dt != content['creation_dt']:
-            instance.creation_dt = content['creation_dt']
+        instance.content_data = new_content
+        if instance.creation_dt != new_content['creation_dt']:
+            instance.creation_dt = new_content['creation_dt']
             update_fields.append("creation_dt")
-        if instance.last_update_dt != content['last_update_dt']:
-            instance.last_update_dt = content['last_update_dt']
+        if instance.last_update_dt != new_content['last_update_dt']:
+            instance.last_update_dt = new_content['last_update_dt']
             update_fields.append("last_update_dt")
         instance.save(update_fields=update_fields)
         return True
 
-    def _fetch(content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
+    def _fetch(self, nb:int, content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
         """
         Fetch updated contents from the source and return it as a dict of dict:
         main dict keys MUST be the app's content id, and value must be the content representation

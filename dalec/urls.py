@@ -1,6 +1,6 @@
 from django.urls import path
 
-from dalec.views import FetchContent
+from dalec.views import FetchContentView
 
 
 class AppConverter:
@@ -16,5 +16,5 @@ class AppConverter:
 register_converter(AppConverter, 'pyname')
 
 urlpatterns = [
-    path('<app:app>/<str:content_type>/(<channel>/<channel_object>/)?', FetchContent.as_view()),
+    path('<app:app>/<str:content_type>/(<channel>/<channel_object>/)?', FetchContentView.as_view()),
 ]

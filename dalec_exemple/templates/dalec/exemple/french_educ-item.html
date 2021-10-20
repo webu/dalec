@@ -1,0 +1,15 @@
+{% extends "dalec/default/item.html" %}
+{% block item_content %}
+    <h2>{{ object.content_data.nom_etablissement }}</h2>
+    <p>
+    Cet établissement {{ object.content_data.statut_public_prive|lower }} a été créé le {{ object.creation_dt|date:"DATE_FORMAT" }}
+    dans la commune « {{ object.content_data.nom_commune }} » ({{ object.content_data.code_postal }}).<br />
+    Il se situe au {{ object.content_data.adresse_1 }} et peut accueillir {{ object.content_data.nombre_d_eleves }} élèves.
+    </p>
+    <iframe
+        width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+        src="https://www.openstreetmap.org/export/embed.html?bbox=2.3160123825073247%2C49.905802031228%2C2.3201563954353337%2C49.907152891064925&amp;layer=mapnik"
+        style="border: 1px solid black">
+    </iframe>
+    <br/><small><a href="https://www.openstreetmap.org/#map=19/49.90648/2.31808">Afficher une carte plus grande</a></small>
+{% endblock %}

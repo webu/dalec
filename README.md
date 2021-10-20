@@ -70,7 +70,7 @@ template by using the templatag `dalec`:
 ```django
 {% load dalec %}
 
-{% dalec app content_type [template=None] [channel=None] [channel_object=None] [**channelKwargs] %}
+{% dalec app content_type [template=None] [channel=None] [channel_object=None] %}
 
 real exemples:
 
@@ -85,9 +85,6 @@ Retrieves recent gitlab activity for a project:
 
 Retrieves recent gitlab issues for a project:
 {% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
-
-Retrieves recent gitlab issues for a project and give the channel_object to register:
-{% dalec "gitlab" "issue" channel="project" channel_object='tardis' dj_channel_obj=tardis_obj %}
 ```
 
 ## Configuration
