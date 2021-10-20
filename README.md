@@ -1,10 +1,12 @@
-# django-aggregate-lot-external-contents aka DALEC 🤖
+# Django Aggregator of a Lot External Contents aka DALEC 🤖
 
 Django Aggregate Lot External Contents (DALEC) is a generic app to aggregate contents from various
 external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
 generic way independent of the source.
 
 It's designed to be customized / extended to fit your needs.
+
+![Logo de DALEC](logo.png)
 
 ## Concepts
 
@@ -231,13 +233,14 @@ If you want to use your own model, in your `settings.py`:
 
 ## External sources which could be nice to support
 
-* 🌍 dalec-wikimedia: get last pages from a wikimedia instance
+* 🌍 dalec-mediawiki: get last pages from a mediawiki instance
 * 📅 dalec-caldav: get events and tasks from a caldav instance (eg: nextcloud agenda)
 * 📂 dalec-webdav: get lastmodified files from a webdav instance (eg: nextcloud files)
 * 📰 dalec-feedparser: get contents from atom and rss feeds
 * 📫 dalec-imap: get emails from imap instance
 * 🐥 dalec-mastodon: get toots from a mastodon instance
 * 📺 dalec-peertube: get last uploaded videos from a peertube instance
+* 🌵 dalec-git: get last commits from a git repository
 * 🐱 dalec-github: get issues, pull-requests, activity from github
 * 🐦 dalec-twitter: get tweets from twitter
 * 🎞 dalec-youtube: get last uploaded videos from youtube
