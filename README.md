@@ -1,6 +1,6 @@
-# Django Aggregator of a Lot External Contents aka DALEC 🤖
+# Django Aggregator of a Lot of External Contents aka DALEC 🤖
 
-Django Aggregate Lot External Contents (DALEC) is a generic app to aggregate contents from various
+Django Aggregator of a Lot of External Contents (DALEC) is a generic app to aggregate contents from various
 external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
 generic way independent of the source.
 
@@ -253,3 +253,14 @@ and override it's `_fetch` method.
 
 To create a dalec child (a proper way), you should create a new django app with the name pattern
 `dalec_<yourExternalSourceUname>`
+
+## NAQ (Never Asked Questions)
+
+### Why this logo is so ugly ?
+
+Because I'm a developper
+
+### Aren't you afraid to be accused of blasphemy by the Daleks ?
+
+A Dalek which have a concept of Blasphemy can not be a sane Dalek! 
+https://youtu.be/6ThpkjDgdvY?t=162
