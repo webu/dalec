@@ -12,12 +12,12 @@
         {% endif %}
     >
         {% for object in object_list %}
-            {% include  %}
+            {% include item_template %}
         {% endfor %}
     </div>
     <script type="text/javascript">
         window.addEventListener("load", (event) => {
-            dalec_fetch_content(document.getElementByID('dalec-{{ id }}'));
+            dalec_fetch_content(document.getElementById('dalec-{{ id }}'));
         });
     </script>
 {% endblock dalec_list_body %}

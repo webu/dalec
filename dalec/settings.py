@@ -13,11 +13,11 @@ class AppSettings(object):
         Return a DALEC_<setting> or it's default Value if not set or raise an Exception
         """
         setting = "DALEC_" + setting
-        if not hasattr(self.setting, setting):
+        if not hasattr(self.settings, setting):
             if raise_if_not_set:
-                ValueError("{setting} is required in your settings.py".format(setting=setting))
+                raise ValueError("{setting} is required in your settings.py".format(setting=setting))
             return default
-        return getattr(self.setting, setting)
+        return getattr(self.settings, setting)
 
     def get_for(self, setting, app, content_type):
         settings = []
@@ -26,9 +26,9 @@ class AppSettings(object):
             if content_type:
                 settings.append("%s_%s_%s" % (app.upper(), content_type.upper(), setting))
             settings.reverse()
-        for setting in settings:
+        for specific_setting in settings:
             try:
-                return self.get_setting(setting, raise_if_not_set=True)
+                return self.get_setting(specific_setting, raise_if_not_set=True)
             except ValueError:
                 continue
         return getattr(self, setting)
@@ -71,9 +71,9 @@ class AppSettings(object):
                 model = "dalec_prime.FetchHistory"
         return model
 
-    # @property
-    # def CSS_FRAMEWORK(self):
-    #     raise NotImplementedError("Not yet implemented")
+    @property
+    def CSS_FRAMEWORK(self):
+        return self.get_setting('CSS_FRAMEWORK', None)
 
 
 # Ugly? Guido recommends this himself ...

@@ -28,11 +28,12 @@ def dalec(context, app, content_type, template=None, channel=None, channel_objec
     dalec_view = FetchContentView(_dalec_template=template)
     dalec_view.setup(
         context.get("request", None),
-        dalec_app=app,
-        dalec_content_type=content_type,
-        dalec_channel=channel,
-        dalec_channel_object=channel_object,
+        app=app,
+        content_type=content_type,
+        channel=channel,
+        channel_object=channel_object,
     )
+    dalec_view.object_list = dalec_view.get_queryset()
     context = dalec_view.get_context_data()
     template = select_template(dalec_view.get_template_names())
-    return template.render(Context(context))
+    return template.render(context)

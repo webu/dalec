@@ -89,6 +89,29 @@ Retrieves recent gitlab issues for a project:
 {% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
 ```
 
+### dalec_exemple
+
+An exemple app is packaged to get a working exemple which does not require any extra configuration.
+
+* add `dalec_exemple`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
+* run migrations
+* include dalec.urls inside your project's urls
+* add `dalec/main.js` inside your base.html or inside the template where you want to display the exemple
+* add those fragments of code inside the template where you want to display the exemple:
+
+```django
+{% load dalec %}
+<h1>Last quarters (very usefull, isn't it ?)</h1>
+{% dalec "exemple" "quarter" %}
+
+<h1>Last updated establishments of french national education</h1>
+{% dalec "exemple" "french_educ" %}
+
+<h1>Last updated establishments of french national education depending of the Academy of Grenoble</h1>
+{% dalec "exemple" "french_educ" channel="academy" channel_object="Grenoble" %}
+```
+
+
 ## Configuration
 
 This app have general settings which can be erased for all of it's children and sometimes by 

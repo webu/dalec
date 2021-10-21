@@ -1,3 +1,5 @@
+import hashlib
+
 from django.apps import apps
 from django.urls import reverse
 from django.http import HttpResponse
@@ -87,7 +89,7 @@ class FetchContentView(ListView):
         tpl_names += [
             "dalec/{app}/{content_type}-{type}.html".format(**kwargs),
             "dalec/{app}/{type}.html".format(**kwargs),
-            "dalec/default/{type}.html",
+            "dalec/default/{type}.html".format(**kwargs),
         ]
         css_framework = app_settings.CSS_FRAMEWORK
         if css_framework:
@@ -106,7 +108,7 @@ class FetchContentView(ListView):
     def get_item_template(self):
         tpl_names = self.get_template_names(template_type="item")
         template = select_template(tpl_names)
-        return template.name
+        return template.template.name
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -120,11 +122,13 @@ class FetchContentView(ListView):
         context.update({
             "item_template": self.get_item_template(),
             "app": self.dalec_app,
+            "content_type": self.dalec_content_type,
             "channel": self.dalec_channel,
             "channel_object": self.dalec_channel_object,
-            "content_type": self.dalec_content_type,
             "url": reverse("dalec_fetch_content", kwargs=url_kwargs)
         })
+        temp_id = "{app}-{content_type}-{channel}-{channel_object}".format(**context)
+        context["id"] = hashlib.md5(temp_id.encode('utf-8')).hexdigest()
         if self.dalec_template:
             context["url"] += "?template=%s" % self.dalec_template
         return context

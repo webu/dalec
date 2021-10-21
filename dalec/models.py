@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import JSONField
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.utils.translation import ugettext_lazy as _
 
 
 class FetchHistoryBase(models.Model):
@@ -12,7 +15,6 @@ class FetchHistoryBase(models.Model):
     last_fetch_dt = models.DateTimeField(
         _("last fetch datetime"),
         auto_now=True,
-        auto_now_add=True,
         blank=False,
         null=False,
     )
@@ -44,7 +46,7 @@ class FetchHistoryBase(models.Model):
     class Meta:
         verbose_name = _("Content fetch history line")
         verbose_name_plural = _("Content fetch history lines")
-        order_by = ('-last_fetch_dt', )
+        ordering = ('-last_fetch_dt', )
         get_latest_by = 'last_fetch_dt'
         abstract = True
 
@@ -59,7 +61,7 @@ class ContentBase(models.Model):
         auto_now_add=False,
         blank=False,
         null=False,
-        index=True,
+        db_index=True,
     )
     creation_dt = models.DateTimeField(
         _("created datetime (on external source)"),
@@ -67,7 +69,7 @@ class ContentBase(models.Model):
         auto_now_add=False,
         blank=False,
         null=False,
-        index=True,
+        db_index=True,
     )
     app = models.CharField(
         _("dalec app"),
@@ -93,11 +95,14 @@ class ContentBase(models.Model):
         null=True,
         blank=True,
     )
-    dj_channel_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    dj_channel_id = models.PositiveIntegerField()
-    dj_channel_obj = GenericForeignKey(
-        'dj_channel_content_type', 'dj_channel_id',
-        for_concrete_model=False,
+    dj_channel_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="+",
+    )
+    dj_channel_id = models.PositiveIntegerField(
         verbose_name=_("related object"),
         blank=True,
         null=True,
@@ -106,17 +111,27 @@ class ContentBase(models.Model):
             "(eg. could be an instance of model `Project` "
             "for app=gitlab, content_type=issue, channel=project)")
     )
-    dj_content_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    dj_content_id = models.PositiveIntegerField()
-    dj_content_obj = GenericForeignKey(
-        'dj_content_content_type', 'dj_content_id',
+    dj_channel_obj = GenericForeignKey(
+        'dj_channel_content_type', 'dj_channel_id',
         for_concrete_model=False,
+    )
+    dj_content_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="+",
+    )
+    dj_content_id = models.PositiveIntegerField(
         verbose_name=_("content"),
-        on_delete=models.SET_NULL,
         blank=True,
         null=True,
         help_text=_("The django's model's instance which is concerned "
                     "(eg. could be an instance of model `Issue` for dalec-gitlab)")
+    )
+    dj_content_obj = GenericForeignKey(
+        'dj_content_content_type', 'dj_content_id',
+        for_concrete_model=False,
     )
     content_id = models.CharField(
         _("app's content id"),
@@ -125,14 +140,14 @@ class ContentBase(models.Model):
         blank=False,
         help_text=_("ID of the content inside the external app.")
     )
-    content_data = models.JSONField(
-        encoder="django.core.serializers.json.DjangoJSONEncoder"
+    content_data = JSONField(
+        encoder=DjangoJSONEncoder
     )
 
     class Meta:
         verbose_name = _("Content")
         verbose_name_plural = _("Contents")
-        order_by = ('-last_update_dt', )
+        ordering = ('-last_update_dt', )
         get_latest_by = 'last_update_dt'
         abstract = True
         index_together = (

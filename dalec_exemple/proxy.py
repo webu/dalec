@@ -15,8 +15,9 @@ class ExempleProxy(Proxy):
     * french_educ: last updated establishments of french national education. Available channels:
         * academy: retrieve for a specific academy name (eg: « Amiens »)
     """
+    app = "exemple"
 
-    def _fetch(slef, nb:int, content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
+    def _fetch(self, nb:int, content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
         if content_type == "quarter":
             if channel or channel_object:
                 raise ValueError("quarter does not support channels")
@@ -29,22 +30,15 @@ class ExempleProxy(Proxy):
         i = 0
         contents = {}
         last_quarter = now()
-        if last_quarter.minute > 45:
-            last_quarter.minute = 45
-        elif last_quarter.minute > 30:
-            last_quarter.minute = 30
-        elif last_quarter.minute > 15:
-            last_quarter.minute = 15
-        else:
-            last_quarter.minute = 0
-
+        last_quarter = last_quarter - timedelta(minutes=last_quarter.minute % 15)
+        last_quarter.replace(second=0, microsecond=0)
         while i < nb:
             quarter = last_quarter - timedelta(seconds=(900 * i))
             i += 1
             hh_mm = "%02dh%02d" % (quarter.hour, quarter.minute, )
             contents[hh_mm] = {
                 # required attributes
-                "id": quarter,
+                "id": hh_mm,
                 "last_update_dt": quarter,
                 "creation_dt": quarter,
                 # some other data
@@ -53,7 +47,7 @@ class ExempleProxy(Proxy):
             }
         return contents
 
-    def _fetch_quarter(self, nb, channel=None, channel_object=None):
+    def _fetch_french_educ(self, nb, channel=None, channel_object=None):
         params = {
             "order_by": "date_maj_ligne desc",
             "limit": nb,

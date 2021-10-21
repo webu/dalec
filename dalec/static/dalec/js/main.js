@@ -11,7 +11,7 @@ function dalec_fetch_content(container){
         }
     ).then(function(response){
         if (!response.ok) {
-            console.error(`HTTP error ${reponse.status} while fetching ${data.url}`);
+            console.error(`HTTP error ${response.status} while fetching ${data.url}`);
             return ;
         }
         if (response.status === 204) {

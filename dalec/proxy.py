@@ -1,11 +1,11 @@
 from datetime import timedelta
+from importlib import import_module
 from typing import Any, Union, Dict
 
 from django.apps import apps
 from django.db.models import Model
 from django.utils import timezone
 from django.utils.decorators import classproperty
-from django.utils.module_loading import import_string
 
 from dalec import settings as app_settings
 
@@ -14,20 +14,22 @@ class ProxyPool:
     _proxies = {}
 
     @classmethod
-    def register(cls, proxy_class):
-        if not issubclass(proxy_class, Proxy):
+    def register(cls, proxy, override=False):
+        if issubclass(proxy, Proxy):
+            proxy = proxy()
+        if not isinstance(proxy, Proxy):
             raise ValueError(
-                "Your proxyClass must extends dalec.proxy.Proxy"
+                "Your proxy must extends dalec.proxy.Proxy"
             )
-        if not proxy_class.app:
+        if not proxy.app:
             raise ValueError(
-                "Your proxyClass must set it's app name in its `app` attribute"
+                "Your proxy must set it's app name in its `app` attribute"
             )
-        if proxy_class.app in cls._proxies and cls._proxies[proxy_class.app] != proxy_class:
+        if proxy.app in cls._proxies and not override and cls._proxies[proxy.app] != proxy:
             raise ValueError(
-                "A proxy is already registered for app \"{app}\"".format(proxy_class.app)
+                "A proxy is already registered for app \"{app}\"".format(proxy.app)
             )
-        cls._proxies[proxy_class.app] = proxy_class
+        cls._proxies[proxy.app] = proxy
 
     @classmethod
     def get(cls, app, autoload=True):
@@ -35,12 +37,12 @@ class ProxyPool:
             if autoload:
                 # try to load the proxy module from dalec_<app>.
                 try:
-                    import_string('dalec_%(app)s.proxy' % app)
-                except ImportError:
+                    mod = import_module('dalec_%s.proxy' % app)
+                except ImportError as e:
                     raise ValueError((
                         "No proxy registered for app {app} and "
                         "impossible to autoload dalec_{app}.proxy"
-                    ).format(app=app))
+                    ).format(app=app)) from e
                 else:
                     return cls.get(app, autoload=False)
             raise ValueError("No proxy registered for app {app}".format(app=app))
@@ -62,7 +64,7 @@ class ProxyMeta(type):
         return proxy_class
 
 
-class Proxy:
+class Proxy(metaclass=ProxyMeta):
     """
     Abstact Proxy Class that dalec's children must inherit to define a proxy class specific
     for an app.
@@ -86,13 +88,14 @@ class Proxy:
     def refresh(
             self, content_type:str, channel:str, channel_object:str, force:bool=False,
             dj_channel_obj:Any=None
-        ) -> Union(tuple(int, int, int), bool):
+        ): # -> Union(tuple((int, int, int)), bool):
         """
         Fetch updated contents from the source and update/create it into the DB.
         Then, if some contents has been created, delete oldests contents which are not anymore
         required
         returns number of created, updated and deleted objects or False if cache not yet expired
         """
+        force = True
         dalec_kwargs = {
             'content_type': content_type, 'channel': channel, 'channel_object': channel_object
         }
@@ -102,11 +105,10 @@ class Proxy:
             if last_fetch.last_fetch_dt > too_old :
                 # last request is still too recent: we do not spam the external app
                 return False
-
-        contents = self._fetch(
-            app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type),
-            **dalec_kwargs
-        )
+        nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
+        nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
+        contents = self._fetch(nb, **dalec_kwargs)
+        self.set_last_fetch(last_fetch=last_fetch, **dalec_kwargs)
         if not contents:
             return 0, 0, 0
 
@@ -120,11 +122,10 @@ class Proxy:
 
         nb_created = 0
         for new_content in contents.values():
-            self.create_content(content=new_content, dj_channel_obj=dj_channel_obj,
+            res = self.create_content(content=new_content, dj_channel_obj=dj_channel_obj,
                                 **dalec_kwargs)
             if res:
                 nb_created += 1
-
         # exterminate the oldest ones if some new contents have been created
         nb_deleted = (0 if not nb_created
                       else self.exterminate(**dalec_kwargs))
@@ -205,8 +206,9 @@ class Proxy:
     def set_last_fetch(self, content_type:str, channel:str, channel_object:str, last_fetch=False):
         if last_fetch is None:
             last_fetch = self.get_last_fetch(content_type, channel, channel_object)
-        elif not last_fetch:
+        if not last_fetch:
             last_fetch = self.fetch_history_model(
+                app=self.app,
                 content_type=content_type,
                 channel=channel,
                 channel_object=channel_object,
@@ -224,4 +226,7 @@ class Proxy:
             qs = qs.filter(channel_object=channel_object)
         else:
             qs = qs.filter(channel_object__isnull=True)
-        return qs.latest()
+        try:
+            return qs.latest()
+        except self.fetch_history_model.DoesNotExist:
+            return None
