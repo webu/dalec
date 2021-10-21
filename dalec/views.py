@@ -66,7 +66,7 @@ class FetchContentView(ListView):
 
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset(*args, **kwargs)
-        qs.filter(app=self.dalec_app, content_type=self.dalec_content_type)
+        qs = qs.filter(app=self.dalec_app, content_type=self.dalec_content_type)
         if not self.dalec_channel:
             qs = qs.filter(channel__isnull=True)
         else:
