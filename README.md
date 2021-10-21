@@ -245,13 +245,13 @@ If you want to use your own model, in your `settings.py`:
 
 ## External sources supported
 
-* 🦝 [https://dev.webu.coop/w/i/dalec-gitlab/](dalec-gitlab):
+* 🦝 [dalec-gitlab](https://dev.webu.coop/w/i/dalec-gitlab/):
   get issues and activities from a gitlab instance
-* ☁ [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-nextcloud):
+* ☁ [dalec-nextcloud](https://dev.webu.coop/w/i/dalec-nextcloud/):
   get events and activities from a nextcloud instance
-* 🗣 [https://dev.webu.coop/w/i/dalec-discourse/](dalec-discourse):
+* 🗣 [dalec-discourse](https://dev.webu.coop/w/i/dalec-discourse/):
   get last messages or topics from a discourse instance
-* 🔗 [https://dev.webu.coop/w/i/dalec-openproject/](dalec-openproject):
+* 🔗 [dalec-openproject](https://dev.webu.coop/w/i/dalec-openproject/):
   get tasks from an openproject instance
 
 ## External sources which could be nice to support
