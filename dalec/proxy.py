@@ -106,7 +106,6 @@ class Proxy(metaclass=ProxyMeta):
                 # last request is still too recent: we do not spam the external app
                 return False
         nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
-        nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
         contents = self._fetch(nb, **dalec_kwargs)
         self.set_last_fetch(last_fetch=last_fetch, **dalec_kwargs)
         if not contents:
@@ -137,7 +136,7 @@ class Proxy(metaclass=ProxyMeta):
         dj_channel_obj:Any=None
     ) -> bool:
         """
-        Create a new instance of content and returns True if it has beend created
+        Create a new instance of content and returns True if it has been created
         """
         instance = self.content_model(
             creation_dt=content['creation_dt'],
@@ -155,7 +154,7 @@ class Proxy(metaclass=ProxyMeta):
 
     def update_content(self, instance:Model, new_content:dict) -> bool:
         """
-        Update an existing instance of content and returns True if it really need update
+        Update an existing instance of content and returns True if it really needed update
         """
         if instance.content_data == new_content:
             return False
