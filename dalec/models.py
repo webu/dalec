@@ -151,5 +151,5 @@ class ContentBase(models.Model):
         get_latest_by = 'last_update_dt'
         abstract = True
         index_together = (
-            ('app', 'content_type', 'channel'),
+            ('app', 'content_type', 'channel', 'channel_object'),
         )
