@@ -18,13 +18,13 @@ Contents are categorized via :
   (eg. `issue`, `activity`, `commit`, `merge requests`…)
 * `channel`: some apps can be requested to get a more or less filtered contents. 
   For exemple, in Gitlab, it's called "scope". You can retrieve issues from:
-  * the whole site (`channel=None` and `channel_obj=None` for us)
-  * a specific group (`channel="group"` and `channel_obj="<gitlab_group_id>"`)
-  * a specific project (`channel="project"` and `channel_obj="<gitlab_project_id>"`)
-  * a specific author (`channel="author"` and `channel_obj="<gitlab_user_id>"`)
-  * a specific assignee (`channel="assignee"` and `channel_obj="<gitlab_user_id>"`)
+  * the whole site (`channel=None` and `channel_object=None` for us)
+  * a specific group (`channel="group"` and `channel_object="<gitlab_group_id>"`)
+  * a specific project (`channel="project"` and `channel_object="<gitlab_project_id>"`)
+  * a specific author (`channel="author"` and `channel_object="<gitlab_user_id>"`)
+  * a specific assignee (`channel="assignee"` and `channel_object="<gitlab_user_id>"`)
   * etc.
-* `channel_obj`: the ID (for the app requested) of the channel's related object
+* `channel_object`: the ID (for the app requested) of the channel's related object
 
 Before you ask: yes, some contents can be duplicated (eg. an issue from the "group" channel 
 could be duplicated in the "project" channel). It's normal and **wanted**. Remember : the purpose
@@ -245,13 +245,13 @@ If you want to use your own model, in your `settings.py`:
 
 ## External sources supported
 
-* 🦝 [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-gitlab):
+* 🦝 [https://dev.webu.coop/w/i/dalec-gitlab/](dalec-gitlab):
   get issues and activities from a gitlab instance
 * ☁ [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-nextcloud):
   get events and activities from a nextcloud instance
 * 🗣 [https://dev.webu.coop/w/i/dalec-discourse/](dalec-discourse):
   get last messages or topics from a discourse instance
-* 🔗 [https://dev.webu.coop/w/i/dalec-nextcloud/](dalec-openproject):
+* 🔗 [https://dev.webu.coop/w/i/dalec-openproject/](dalec-openproject):
   get tasks from an openproject instance
 
 ## External sources which could be nice to support
