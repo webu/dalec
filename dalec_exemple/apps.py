@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DalekExempleConfig(AppConfig):
+class DalecExempleConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "dalek_exemple"
+    name = "dalec_exemple"

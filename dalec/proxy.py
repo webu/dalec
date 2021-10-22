@@ -14,12 +14,16 @@ class ProxyPool:
     _proxies = {}
 
     @classmethod
+    def unregister(cls, app):
+        return cls._proxies.pop(app, None)
+
+    @classmethod
     def register(cls, proxy, override=False):
-        if issubclass(proxy, Proxy):
+        if isinstance(proxy, type):
             proxy = proxy()
         if not isinstance(proxy, Proxy):
             raise ValueError(
-                "Your proxy must extends dalec.proxy.Proxy"
+                "Your proxy must extends `dalec.proxy.Proxy`"
             )
         if not proxy.app:
             raise ValueError(
@@ -27,7 +31,7 @@ class ProxyPool:
             )
         if proxy.app in cls._proxies and not override and cls._proxies[proxy.app] != proxy:
             raise ValueError(
-                "A proxy is already registered for app \"{app}\"".format(proxy.app)
+                "A proxy is already registered for app \"{app}\"".format(app=proxy.app)
             )
         cls._proxies[proxy.app] = proxy
 
@@ -57,8 +61,6 @@ class ProxyMeta(type):
     def __new__(cls, name, bases, attrs):
         if not bases:
             return super().__new__(cls, name, bases, attrs)
-        if not attrs.get('app'):
-            raise ValueError("your proxyClass must set it's app name in its `app` attribute")
         proxy_class = super().__new__(cls, name, bases, attrs)
         ProxyPool.register(proxy_class)
         return proxy_class
@@ -86,8 +88,8 @@ class Proxy(metaclass=ProxyMeta):
         return apps.get_model(app_settings.FETCH_HISTORY_MODEL)
 
     def refresh(
-            self, content_type:str, channel:str, channel_object:str, force:bool=False,
-            dj_channel_obj:Any=None
+            self, content_type:str, channel:str=None, channel_object:str=None,
+            force:bool=False, dj_channel_obj:Any=None
         ): # -> Union(tuple((int, int, int)), bool):
         """
         Fetch updated contents from the source and update/create it into the DB.
@@ -95,7 +97,6 @@ class Proxy(metaclass=ProxyMeta):
         required
         returns number of created, updated and deleted objects or False if cache not yet expired
         """
-        force = True
         dalec_kwargs = {
             'content_type': content_type, 'channel': channel, 'channel_object': channel_object
         }
@@ -104,7 +105,7 @@ class Proxy(metaclass=ProxyMeta):
             too_old = timezone.now() - timedelta(seconds=app_settings.TTL)
             if last_fetch.last_fetch_dt > too_old :
                 # last request is still too recent: we do not spam the external app
-                return False
+                return False, False, False
         nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
         contents = self._fetch(nb, **dalec_kwargs)
         self.set_last_fetch(last_fetch=last_fetch, **dalec_kwargs)

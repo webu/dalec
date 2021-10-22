@@ -13,7 +13,6 @@ from dalec.proxy import ProxyPool
 
 
 class FetchContentView(ListView):
-    _dalec_template = None
 
     @classproperty
     def model(cls):
@@ -37,14 +36,15 @@ class FetchContentView(ListView):
 
     @cached_property
     def dalec_template(self):
-        return self._dalec_template or self.request.GET.get("template", None)
+        return (
+            self._dalec_template if hasattr(self, '_dalec_template')
+            else self.request.GET.get("template", None)
+        )
 
     def get_paginate_by(self, queryset):
         """
         Get the number of items to paginate by, or ``None`` for no pagination.
         """
-        if self.paginate_by is not None:
-            return self.paginate_by
         return app_settings.get_for('NB_CONTENTS_KEPT', self.dalec_app, self.content_type)
 
     def get(self, request, *args, **kwargs):
@@ -97,11 +97,10 @@ class FetchContentView(ListView):
                 parts = tpl_name.rsplit("/", 1)
                 parts.insert(1, css_framework)
                 tpl_names.insert(i, "/".join(parts))
-
         if self.dalec_template:
             tpl_names.insert(
                 0,
-                "dalec/{app}/%(tpl)s-{type}.html".format(**{**kwargs, "tpl": self.dalec_template})
+                "dalec/{app}/{tpl}-{type}.html".format(**{**kwargs, "tpl": self.dalec_template})
             )
         return tpl_names
 
@@ -118,14 +117,16 @@ class FetchContentView(ListView):
         }
         if self.dalec_channel:
             url_kwargs["channel"] =  self.dalec_channel
-            url_kwargs["channel_object"] = self.dalec_channel_object
+            if self.dalec_channel_object:
+                url_kwargs["channel_object"] = self.dalec_channel_object
         context.update({
             "item_template": self.get_item_template(),
             "app": self.dalec_app,
             "content_type": self.dalec_content_type,
             "channel": self.dalec_channel,
             "channel_object": self.dalec_channel_object,
-            "url": reverse("dalec_fetch_content", kwargs=url_kwargs)
+            "url": reverse("dalec_fetch_content", kwargs=url_kwargs),
+            "ajax_refresh": app_settings.AJAX_REFRESH,
         })
         temp_id = "{app}-{content_type}-{channel}-{channel_object}".format(**context)
         context["id"] = hashlib.md5(temp_id.encode('utf-8')).hexdigest()
@@ -135,8 +136,9 @@ class FetchContentView(ListView):
 
     def refresh_contents(self):
         proxy = ProxyPool.get(self.dalec_app)
-        return proxy.refresh(
+        created, updated, deleted = proxy.refresh(
             self.dalec_content_type,
             self.dalec_channel,
             self.dalec_channel_object
         )
+        return bool(created or updated or deleted)

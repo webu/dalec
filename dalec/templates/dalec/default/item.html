@@ -2,7 +2,9 @@
     data-app="{{ object.app }}" data-content-type="{{ object.content_type}}"
     {% if channel %}
         data-channel="{{ channel }}"
-        data-channel-object="{{ channel_object }}"
+        {% if channel_object %}
+            data-channel-object="{{ channel_object }}"
+        {% endif %}
     {% endif %}
 >
     {% block item_content %}

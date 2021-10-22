@@ -18,32 +18,37 @@ class ExempleProxy(Proxy):
     app = "exemple"
 
     def _fetch(self, nb:int, content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
-        if content_type == "quarter":
-            if channel or channel_object:
-                raise ValueError("quarter does not support channels")
-            return self._fetch_quarter(nb)
+        if content_type == "hour":
+            if not channel or channel not in ("quarter", "half"):
+                raise ValueError("%s requires a channel ('quarter' or 'half')" % content_type)
+            return self._fetch_hour(nb, channel, channel_object)
         if content_type == "french_educ":
             return self._fetch_french_educ(nb, channel, channel_object)
         raise ValueError("Invalid content_type %s" % content_type)
 
-    def _fetch_quarter(self, nb):
+    def _fetch_hour(self, nb, channel, channel_object):
         i = 0
         contents = {}
-        last_quarter = now()
-        last_quarter = last_quarter - timedelta(minutes=last_quarter.minute % 15)
-        last_quarter.replace(second=0, microsecond=0)
+        if channel_object:
+            last_dt = parse_datetime(channel_object)
+        else:
+            last_dt = now()
+        minutes = 15 if channel == "quarter" else 30
+        last_dt = last_dt - timedelta(minutes=last_dt.minute % minutes)
+        last_dt.replace(second=0, microsecond=0)
+
         while i < nb:
-            quarter = last_quarter - timedelta(seconds=(900 * i))
+            new_dt = last_dt - timedelta(minutes=(minutes * i))
             i += 1
-            hh_mm = "%02dh%02d" % (quarter.hour, quarter.minute, )
+            hh_mm = "%02dh%02d" % (new_dt.hour, new_dt.minute, )
             contents[hh_mm] = {
                 # required attributes
                 "id": hh_mm,
-                "last_update_dt": quarter,
-                "creation_dt": quarter,
+                "last_update_dt": new_dt,
+                "creation_dt": new_dt,
                 # some other data
-                "full_representation": str(quarter),
-                "night": quarter.hour < 6 or quarter.hour > 22,
+                "full_representation": str(new_dt),
+                "night": new_dt.hour < 6 or new_dt.hour > 22,
             }
         return contents
 

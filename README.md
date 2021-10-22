@@ -36,15 +36,17 @@ and keep a KISS Model, we need those duplicates.
 
 ## Installation
 
-You **MUST** use a DB supporting 
-django's [`JSONField`](https://docs.djangoproject.com/fr/3.2/ref/models/fields/#jsonfield)
+If you are using Django older than 3.1, the JSONField is provided from 
+[django-jsonfield-backport](https://pypi.org/project/django-jsonfield-backport/). 
+For 3.1+, you **MUST** use a DB supporting the official
+[django's `JSONField`](https://docs.djangoproject.com/fr/3.1/ref/models/fields/#jsonfield).
 
 You **SHOULD NOT** install this app but you **SHOULD** install one (or more) of it's children 
 (see [external sources supported](#External-sources-supported)). eg:
 
 `pip install dalec-gitlab dalec-nextcloud`
 
-Then, add `dalec`, `dalec_prime` and dalek's children to `INSTALLED_APPS` in `settings.py`:
+Then, add `dalec`, `dalec_prime` and dalec's children to `INSTALLED_APPS` in `settings.py`:
 
 ```python
 # settings.py
@@ -72,7 +74,7 @@ template by using the templatag `dalec`:
 ```django
 {% load dalec %}
 
-{% dalec app content_type [template=None] [channel=None] [channel_object=None] %}
+{% dalec app content_type [channel=None] [channel_object=None] [template=None] %}
 
 real exemples:
 
@@ -287,3 +289,16 @@ Because I'm a developper
 
 A Dalek which have a concept of Blasphemy can not be a sane Dalek! 
 https://youtu.be/6ThpkjDgdvY?t=162
+
+### What's the dalec origin ?
+
+The Dale**k**s are a fictional extraterrestrial race of mutants principally portrayed in the 
+British science fiction television programme Doctor Who. Name (and logo) of this django app is 
+directly related to them.
+
+This project was made possible thanks to the 
+[Open Space Maker Federation](https://www.federation-openspacemakers.com) whose goal is to open 
+up the world of space infrastructure to as many people as possible.  
+They need boards to aggregate contents from differents sources (gitlab, discourse…). 
+We ([Webu](https://www.webu.coop))didn't find any applications which fit our needs, 
+so we create a new one and released it under the MIT licence.

@@ -6,7 +6,7 @@ from ..views import FetchContentView
 register = Library()
 
 @register.simple_tag(takes_context=True)
-def dalec(context, app, content_type, template=None, channel=None, channel_object=None):
+def dalec(context, app, content_type, channel=None, channel_object=None, template=None):
     """
     Show last N contents for a specific app+content_type (and optionnaly channel+channel_object)
     Usage exemple:
@@ -32,6 +32,7 @@ def dalec(context, app, content_type, template=None, channel=None, channel_objec
         content_type=content_type,
         channel=channel,
         channel_object=channel_object,
+        page=1,
     )
     dalec_view.object_list = dalec_view.get_queryset()
     context = dalec_view.get_context_data()

@@ -1,5 +1,8 @@
-*.pyc
+.coverage
+*.py[co]
+*.pot
 *.egg-info
-.sass-cache
+.tox/
+__pycache__
 build/
 dist/

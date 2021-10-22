@@ -1,5 +1,8 @@
+include AUTHORS
 include MANIFEST.in
-include README.md
-recursive-include dalec/templates *
-recursive-include dalec/locale *
-recursive-include dalec_prime/locale *
+include *.md
+graft dalec
+graft dalec_exemple
+graft dalec_prime
+global-exclude __pycache__
+global-exclude *.py[co]

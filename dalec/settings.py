@@ -19,12 +19,14 @@ class AppSettings(object):
             return default
         return getattr(self.settings, setting)
 
-    def get_for(self, setting, app, content_type):
+    def get_for(self, setting, app=None, content_type=None):
         settings = []
         if app:
-            settings.append("%s_%s" % (app.upper(), setting))
+            app = app.strip().upper()
+            settings.append("%s_%s" % (app, setting))
             if content_type:
-                settings.append("%s_%s_%s" % (app.upper(), content_type.upper(), setting))
+                content_type = content_type.replace('-', '_').strip().upper()
+                settings.append("%s_%s_%s" % (app, content_type, setting))
             settings.reverse()
         for specific_setting in settings:
             try:
@@ -74,7 +76,6 @@ class AppSettings(object):
     @property
     def CSS_FRAMEWORK(self):
         return self.get_setting('CSS_FRAMEWORK', None)
-
 
 # Ugly? Guido recommends this himself ...
 # http://mail.python.org/pipermail/python-ideas/2012-May/014969.html
