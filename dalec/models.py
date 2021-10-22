@@ -1,6 +1,3 @@
-from django.conf import settings
-from django.contrib.auth import get_user_model
-
 try:
     from django.db.models import JSONField
 except ImportError:

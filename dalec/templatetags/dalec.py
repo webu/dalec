@@ -1,4 +1,4 @@
-from django.template import Library, Context
+from django.template import Library
 from django.template.loader import select_template
 from ..views import FetchContentView
 

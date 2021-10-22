@@ -1,11 +1,15 @@
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, Union, Dict
+from typing import Any, Dict
 
 from django.apps import apps
 from django.db.models import Model
 from django.utils import timezone
-from django.utils.decorators import classproperty
+
+try:
+    from django.utils.decorators import classproperty
+except ImportError:
+    from django.utils.functional import classproperty
 
 from dalec import settings as app_settings
 
@@ -41,7 +45,7 @@ class ProxyPool:
             if autoload:
                 # try to load the proxy module from dalec_<app>.
                 try:
-                    mod = import_module("dalec_%s.proxy" % app)
+                    import_module("dalec_%s.proxy" % app)
                 except ImportError as e:
                     raise ValueError(
                         (

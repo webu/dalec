@@ -67,7 +67,10 @@ class ExempleProxy(Proxy):
                 raise ValueError("Invalid channel object")
             params["where"] = 'libelle_academie ="%s"' % channel_object
         resp = requests.get(
-            "https://data.education.gouv.fr/api/v2/catalog/datasets/fr-en-annuaire-education/records",
+            (
+                "https://data.education.gouv.fr/api/v2/"
+                "catalog/datasets/fr-en-annuaire-education/records"
+            ),
             params=params,
         )
         resp.raise_for_status()

@@ -191,7 +191,7 @@ class DalecTests(TestCase):
             ProxyPool.register(EmptyChildProxy)
 
         with self.assertRaisesRegex(ValueError, "`app` attribute"):
-            from .proxies.bad_wolf import BadWolfProxy
+            from .proxies.bad_wolf import BadWolfProxy  # NOQA
 
         from tests.proxies.adiposian import AdiposianProxy
 
