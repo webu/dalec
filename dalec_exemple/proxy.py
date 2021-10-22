@@ -15,12 +15,17 @@ class ExempleProxy(Proxy):
     * french_educ: last updated establishments of french national education. Available channels:
         * academy: retrieve for a specific academy name (eg: « Amiens »)
     """
+
     app = "exemple"
 
-    def _fetch(self, nb:int, content_type:str, channel:str, channel_object:str) -> Dict[str, dict]:
+    def _fetch(
+        self, nb: int, content_type: str, channel: str, channel_object: str
+    ) -> Dict[str, dict]:
         if content_type == "hour":
             if not channel or channel not in ("quarter", "half"):
-                raise ValueError("%s requires a channel ('quarter' or 'half')" % content_type)
+                raise ValueError(
+                    "%s requires a channel ('quarter' or 'half')" % content_type
+                )
             return self._fetch_hour(nb, channel, channel_object)
         if content_type == "french_educ":
             return self._fetch_french_educ(nb, channel, channel_object)
@@ -40,7 +45,7 @@ class ExempleProxy(Proxy):
         while i < nb:
             new_dt = last_dt - timedelta(minutes=(minutes * i))
             i += 1
-            hh_mm = "%02dh%02d" % (new_dt.hour, new_dt.minute, )
+            hh_mm = "%02dh%02d" % (new_dt.hour, new_dt.minute)
             contents[hh_mm] = {
                 # required attributes
                 "id": hh_mm,
@@ -53,21 +58,17 @@ class ExempleProxy(Proxy):
         return contents
 
     def _fetch_french_educ(self, nb, channel=None, channel_object=None):
-        params = {
-            "order_by": "date_maj_ligne desc",
-            "limit": nb,
-            "offset": 0,
-        }
+        params = {"order_by": "date_maj_ligne desc", "limit": nb, "offset": 0}
         if channel:
             if channel != "academy":
                 raise ValueError("Invalid channel %s" % channel)
             channel_object = channel_object.strip()
             if not channel_object:
                 raise ValueError("Invalid channel object")
-            params["where"] = "libelle_academie =\"%s\"" % channel_object
+            params["where"] = 'libelle_academie ="%s"' % channel_object
         resp = requests.get(
             "https://data.education.gouv.fr/api/v2/catalog/datasets/fr-en-annuaire-education/records",
-            params=params
+            params=params,
         )
         resp.raise_for_status()
         contents = {}
@@ -80,7 +81,11 @@ class ExempleProxy(Proxy):
                 **record,
                 # and add our own required fields
                 "id": id,
-                "last_update_dt": parse_datetime('%s 00:00:00Z' % record["date_maj_ligne"]),
-                "creation_dt": parse_datetime('%s 00:00:00Z' % record["date_ouverture"]),
+                "last_update_dt": parse_datetime(
+                    "%s 00:00:00Z" % record["date_maj_ligne"]
+                ),
+                "creation_dt": parse_datetime(
+                    "%s 00:00:00Z" % record["date_ouverture"]
+                ),
             }
         return contents

@@ -5,6 +5,7 @@ from ..views import FetchContentView
 
 register = Library()
 
+
 @register.simple_tag(takes_context=True)
 def dalec(context, app, content_type, channel=None, channel_object=None, template=None):
     """

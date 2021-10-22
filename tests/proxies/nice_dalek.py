@@ -5,7 +5,8 @@ class NiceDalek(Proxy):
     """
     Fetch all the nice daleks from the whole universe
     """
-    app = 'nice_dalek'
+
+    app = "nice_dalek"
 
     def _fetch(self, *args, **kwargs):
         """
