@@ -1,3 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Union, List, Type
+    from dalec.models import ContentBase
+    from django.http import HttpRequest
+    from django.db.models.query import QuerySet
+
 import hashlib
 
 from django.apps import apps
@@ -6,46 +15,48 @@ from django.http import HttpResponse
 from django.template.loader import select_template
 
 try:
-    from django.utils.decorators import classproperty
+    from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
-    from django.utils.functional import classproperty
+    from django.utils.functional import classproperty  # type: ignore
 from django.utils.functional import cached_property
 from django.views.generic import ListView
 
 from dalec import settings as app_settings
 from dalec.proxy import ProxyPool
 
+__all__ = ["FetchContentView"]
+
 
 class FetchContentView(ListView):
     @classproperty
-    def model(cls):
+    def model(cls) -> Type[ContentBase]:
         return apps.get_model(app_settings.CONTENT_MODEL)
 
     @property
-    def dalec_app(self):
+    def dalec_app(self) -> str:
         return self.kwargs["app"]
 
     @property
-    def dalec_content_type(self):
+    def dalec_content_type(self) -> str:
         return self.kwargs["content_type"]
 
     @property
-    def dalec_channel(self):
+    def dalec_channel(self) -> str:
         return self.kwargs.get("channel", None)
 
     @property
-    def dalec_channel_object(self):
+    def dalec_channel_object(self) -> str:
         return self.kwargs.get("channel_object", None)
 
     @cached_property
-    def dalec_template(self):
+    def dalec_template(self) -> Union[str, None]:
         return (
             self._dalec_template
             if hasattr(self, "_dalec_template")
             else self.request.GET.get("template", None)
         )
 
-    def get_paginate_by(self, queryset):
+    def get_paginate_by(self, queryset: QuerySet) -> int:
         """
         Get the number of items to paginate by, or ``None`` for no pagination.
         """
@@ -53,7 +64,11 @@ class FetchContentView(ListView):
             "NB_CONTENTS_KEPT", self.dalec_app, self.content_type
         )
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
+        """
+        Return a TemplateResponse with HTML for the last X elements wanted
+        or a 204 response if nothing need an update (cache used or still the same contents)
+        """
         refreshed = self.refresh_contents()
         if not refreshed:
             # nothing to refresh, our content is already the updated one
@@ -70,7 +85,11 @@ class FetchContentView(ListView):
             return HttpResponse(status=204)
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args: tuple, **kwargs: dict) -> QuerySet:
+        """
+        Return the queryset filtered by app + contentype and optionaly channel and channel object
+        if it's given
+        """
         qs = super().get_queryset(*args, **kwargs)
         qs = qs.filter(app=self.dalec_app, content_type=self.dalec_content_type)
         if not self.dalec_channel:
@@ -81,9 +100,9 @@ class FetchContentView(ListView):
             )
         return qs
 
-    def get_template_names(self, template_type="list"):
+    def get_template_names(self, template_type: str = "list") -> List:
         """
-        Returns list of valid templates names, ordered by priority.
+        Return a list of valid templates names, ordered by priority.
         """
         kwargs = {
             "app": self.dalec_app,
@@ -116,12 +135,17 @@ class FetchContentView(ListView):
             )
         return tpl_names
 
-    def get_item_template(self):
+    def get_item_template(self) -> str:
+        """
+        Return the template name to use to display an item in the list, depending the
+        custom template, app, content_type, channel and css_framework if used.
+        """
         tpl_names = self.get_template_names(template_type="item")
         template = select_template(tpl_names)
         return template.template.name
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: dict) -> dict:
+        """Get the context for this view."""
         context = super().get_context_data(**kwargs)
         url_kwargs = {"app": self.dalec_app, "content_type": self.dalec_content_type}
         if self.dalec_channel:
@@ -145,7 +169,11 @@ class FetchContentView(ListView):
             context["url"] += "?template=%s" % self.dalec_template
         return context
 
-    def refresh_contents(self):
+    def refresh_contents(self) -> bool:
+        """
+        Asks to the proxy to refresh content and returns True if something has been or False if
+        there are no new created/updated/deleted content (in this case this view will return a 204)
+        """
         proxy = ProxyPool.get(self.dalec_app)
         created, updated, deleted = proxy.refresh(
             self.dalec_content_type, self.dalec_channel, self.dalec_channel_object

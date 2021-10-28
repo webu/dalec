@@ -4,9 +4,9 @@ import django.core.serializers.json
 from django.db import migrations, models
 
 try:
-    from django.db.models import JSONField
+    from django.db.models import JSONField  # type: ignore
 except ImportError:
-    from django_jsonfield_backport.models import JSONField
+    from django_jsonfield_backport.models import JSONField  # type: ignore
 import django.db.models.deletion
 
 

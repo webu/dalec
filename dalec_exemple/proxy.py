@@ -1,5 +1,11 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Optional, Dict
+
 from datetime import timedelta
-from typing import Dict
+
 import requests
 
 from django.utils.dateparse import parse_datetime
@@ -7,13 +13,15 @@ from django.utils.timezone import now
 
 from dalec.proxy import Proxy
 
+__all__ = ["ExempleProxy"]
+
 
 class ExempleProxy(Proxy):
     """
     Just a proxy exemple wich just fetch the last :
-    * quarter: quarters of an hour from "now" (no channel available)
+    * quarter: quarters or halfs of an hour from "now" or from a specific datetime
     * french_educ: last updated establishments of french national education. Available channels:
-        * academy: retrieve for a specific academy name (eg: « Amiens »)
+        * academy: retrieve for a specific academy name (eg: « Grenoble »)
     """
 
     app = "exemple"
@@ -31,7 +39,12 @@ class ExempleProxy(Proxy):
             return self._fetch_french_educ(nb, channel, channel_object)
         raise ValueError("Invalid content_type %s" % content_type)
 
-    def _fetch_hour(self, nb, channel, channel_object):
+    def _fetch_hour(
+        self, nb: int, channel: str, channel_object: str
+    ) -> Dict[str, dict]:
+        """
+        Return the last N quarters or halfs of an hour from "now" or from a specific datetime
+        """
         i = 0
         contents = {}
         if channel_object:
@@ -57,12 +70,21 @@ class ExempleProxy(Proxy):
             }
         return contents
 
-    def _fetch_french_educ(self, nb, channel=None, channel_object=None):
-        params = {"order_by": "date_maj_ligne desc", "limit": nb, "offset": 0}
+    def _fetch_french_educ(
+        self,
+        nb: int,
+        channel: Optional[str] = None,
+        channel_object: Optional[str] = None,
+    ) -> Dict[str, dict]:
+        """
+        Return the N last updated establishments of french national possibly for a specific academy
+        """
+        params = {"order_by": "date_maj_ligne desc", "limit": str(nb), "offset": "0"}
         if channel:
             if channel != "academy":
                 raise ValueError("Invalid channel %s" % channel)
-            channel_object = channel_object.strip()
+            if channel_object is not None:
+                channel_object = channel_object.strip()
             if not channel_object:
                 raise ValueError("Invalid channel object")
             params["where"] = 'libelle_academie ="%s"' % channel_object

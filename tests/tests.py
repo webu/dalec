@@ -1,3 +1,4 @@
+from importlib import reload
 import time
 
 from copy import copy
@@ -17,6 +18,12 @@ from dalec.proxy import ProxyPool
 
 
 class DalecTests(TestCase):
+    def tearDown(self):
+        """
+        reload settings after a test which could have overrided settings
+        """
+        reload(app_settings)
+
     @property
     def content_model(self):
         return apps.get_model(app_settings.CONTENT_MODEL)
@@ -34,6 +41,7 @@ class DalecTests(TestCase):
         """
         Test if settings overrided for a specific app is returned if set
         """
+        reload(app_settings)
         self.assertEqual(app_settings.NB_CONTENTS_KEPT, 10)
         self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "exemple"), 15)
         self.assertEqual(
@@ -53,17 +61,18 @@ class DalecTests(TestCase):
         with self.assertRaisesRegex(
             ValueError, "adding dalec_prime to your INSTALLED_APPS"
         ):
-            app_settings.CONTENT_MODEL
+            reload(app_settings)
         with self.assertRaisesRegex(
             ValueError, "adding dalec_prime to your INSTALLED_APPS"
         ):
-            app_settings.FETCH_HISTORY_MODEL
+            reload(app_settings)
 
     @override_settings(
         DALEC_CONTENT_MODEL="tests.Content",
         DALEC_FETCH_HISTORY_MODEL="tests.FetchHistory",
     )
     def test_specific_models(self):
+        reload(app_settings)
         content_model = app_settings.CONTENT_MODEL
         self.assertEqual(content_model, "tests.Content")
         fetch_history_model = app_settings.FETCH_HISTORY_MODEL
@@ -93,6 +102,7 @@ class DalecTests(TestCase):
 
     @override_settings(DALEC_TTL=1)
     def test_proxy_fetch_and_ttl(self):
+        reload(app_settings)
         proxy = ProxyPool.get("exemple")
         created, updated, deleted = proxy.refresh("hour", "quarter")
         self.assertEqual(created, app_settings.NB_CONTENTS_KEPT)

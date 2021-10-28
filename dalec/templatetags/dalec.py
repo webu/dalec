@@ -1,3 +1,10 @@
+# "Standard libs"
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Optional
+
 from django.template import Library
 from django.template.loader import select_template
 from ..views import FetchContentView
@@ -7,7 +14,14 @@ register = Library()
 
 
 @register.simple_tag(takes_context=True)
-def dalec(context, app, content_type, channel=None, channel_object=None, template=None):
+def dalec(
+    context: dict,
+    app: str,
+    content_type: str,
+    channel: Optional[str] = None,
+    channel_object: Optional[str] = None,
+    template: Optional[str] = None,
+) -> str:
     """
     Show last N contents for a specific app+content_type (and optionnaly channel+channel_object)
     Usage exemple:
@@ -37,5 +51,5 @@ def dalec(context, app, content_type, channel=None, channel_object=None, templat
     )
     dalec_view.object_list = dalec_view.get_queryset()
     context = dalec_view.get_context_data()
-    template = select_template(dalec_view.get_template_names())
-    return template.render(context)
+    template_obj = select_template(dalec_view.get_template_names())
+    return template_obj.render(context)

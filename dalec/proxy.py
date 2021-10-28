@@ -1,28 +1,50 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Dict, Union, Type, Optional, Tuple
+    from typing_extensions import Literal
+    from django.db.models import Model
+    from django.db.models.query import QuerySet
+    from dalec.models import ContentBase, FetchHistoryBase
+
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, Dict
 
 from django.apps import apps
-from django.db.models import Model
 from django.utils import timezone
 
 try:
-    from django.utils.decorators import classproperty
+    from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
-    from django.utils.functional import classproperty
+    from django.utils.functional import classproperty  # type: ignore
 
 from dalec import settings as app_settings
 
+__all__ = ["ProxyPool", "Proxy"]
+
 
 class ProxyPool:
-    _proxies = {}
+    """
+    Pool to register / load dalec children proxies
+    """
+
+    _proxies: Dict[str, Proxy] = {}
 
     @classmethod
-    def unregister(cls, app):
+    def unregister(cls, app: str) -> Union[Proxy, None]:
+        """
+        Remove from the pool the proxy registered for this app
+        Return the removed proxy if it was existant or None"""
         return cls._proxies.pop(app, None)
 
     @classmethod
-    def register(cls, proxy, override=False):
+    def register(cls, proxy: Union[Proxy, Type[Proxy]], override: bool = False) -> None:
+        """
+        register a proxy instance into the pool
+        if the proxy app is already registed, it will raise a ValueError unless you explicitely
+        want to override it.
+        """
         if isinstance(proxy, type):
             proxy = proxy()
         if not isinstance(proxy, Proxy):
@@ -40,7 +62,13 @@ class ProxyPool:
         cls._proxies[proxy.app] = proxy
 
     @classmethod
-    def get(cls, app, autoload=True):
+    def get(cls, app: str, autoload: bool = True) -> Proxy:
+        """
+        Return the proxy registered for the given app.
+        If it does not exists, the default behaviour is to try to autoload it
+        from the module dalec_<app>.proxy
+        Raise a ValueError if proxy can not be retrieved from the pool (or autoloaded)
+        """
         if app not in cls._proxies:
             if autoload:
                 # try to load the proxy module from dalec_<app>.
@@ -64,11 +92,17 @@ class ProxyMeta(type):
     Meta class to autoregister Proxy class when an app inherit from our Proxy abstact class.
     """
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(
+        cls: Type[ProxyMeta], name: str, bases: tuple, attrs: dict
+    ) -> ProxyMeta:
+        """
+        Build the new Proxy and auto-register it in the pool
+        Auto register
+        """
         if not bases:
             return super().__new__(cls, name, bases, attrs)
         proxy_class = super().__new__(cls, name, bases, attrs)
-        ProxyPool.register(proxy_class)
+        ProxyPool.register(proxy_class)  # type: ignore
         return proxy_class
 
 
@@ -78,17 +112,17 @@ class Proxy(metaclass=ProxyMeta):
     for an app.
     """
 
-    app = None
+    app: Optional[str] = None
 
     @classproperty
-    def content_model(cls) -> Model:
+    def content_model(cls) -> Type[ContentBase]:
         """
         class attribute to easely get the Content model
         """
         return apps.get_model(app_settings.CONTENT_MODEL)
 
     @classproperty
-    def fetch_history_model(cls) -> Model:
+    def fetch_history_model(cls) -> Type[FetchHistoryBase]:
         """
         class attribute to easely get the FetchHistory model
         """
@@ -97,11 +131,13 @@ class Proxy(metaclass=ProxyMeta):
     def refresh(
         self,
         content_type: str,
-        channel: str = None,
-        channel_object: str = None,
-        force: bool = False,
-        dj_channel_obj: Any = None,
-    ):  # -> Union(tuple((int, int, int)), bool):
+        channel: Optional[str] = None,
+        channel_object: Optional[str] = None,
+        force: Optional[bool] = False,
+        dj_channel_obj: Optional[Model] = None,
+    ) -> Union[
+        Tuple[int, int, int], Tuple[Literal[False], Literal[False], Literal[False]]
+    ]:
         """
         Fetch updated contents from the source and update/create it into the DB.
         Then, if some contents has been created, delete oldests contents which are not anymore
@@ -113,20 +149,22 @@ class Proxy(metaclass=ProxyMeta):
             "channel": channel,
             "channel_object": channel_object,
         }
-        last_fetch = None if force else self.get_last_fetch(**dalec_kwargs)
+        last_fetch = (
+            None if force else self.get_last_fetch(**dalec_kwargs)  # type: ignore
+        )
         if last_fetch:
             too_old = timezone.now() - timedelta(seconds=app_settings.TTL)
             if last_fetch.last_fetch_dt > too_old:
                 # last request is still too recent: we do not spam the external app
                 return False, False, False
         nb = app_settings.get_for("NB_CONTENTS_KEPT", self.app, content_type)
-        contents = self._fetch(nb, **dalec_kwargs)
-        self.set_last_fetch(last_fetch=last_fetch, **dalec_kwargs)
+        contents = self._fetch(nb, **dalec_kwargs)  # type: ignore
+        self.set_last_fetch(last_fetch=last_fetch, **dalec_kwargs)  # type: ignore
         if not contents:
             return 0, 0, 0
 
         nb_updated = 0
-        to_update = self.get_contents_queryset(**dalec_kwargs).filter(
+        to_update = self.get_contents_queryset(**dalec_kwargs).filter(  # type: ignore
             content_id__in=contents.keys()
         )
         for instance in to_update:
@@ -138,12 +176,16 @@ class Proxy(metaclass=ProxyMeta):
         nb_created = 0
         for new_content in contents.values():
             res = self.create_content(
-                content=new_content, dj_channel_obj=dj_channel_obj, **dalec_kwargs
+                content=new_content,
+                dj_channel_obj=dj_channel_obj,
+                **dalec_kwargs  # type: ignore
             )
             if res:
                 nb_created += 1
         # exterminate the oldest ones if some new contents have been created
-        nb_deleted = 0 if not nb_created else self.exterminate(**dalec_kwargs)
+        nb_deleted = (
+            0 if not nb_created else self.exterminate(**dalec_kwargs)  # type: ignore
+        )
 
         return nb_created, nb_updated, nb_deleted
 
@@ -153,10 +195,10 @@ class Proxy(metaclass=ProxyMeta):
         channel: str,
         channel_object: str,
         content: dict,
-        dj_channel_obj: Any = None,
-    ) -> bool:
+        dj_channel_obj: Optional[Model] = None,
+    ) -> ContentBase:
         """
-        Create a new instance of content and returns True if it has been created
+        Create a new instance of content and return it
         """
         instance = self.content_model(
             creation_dt=content["creation_dt"],
@@ -170,9 +212,9 @@ class Proxy(metaclass=ProxyMeta):
             content_data=content,
         )
         instance.save()
-        return True
+        return instance
 
-    def update_content(self, instance: Model, new_content: dict) -> bool:
+    def update_content(self, instance: ContentBase, new_content: dict) -> bool:
         """
         Update an existing instance of content and returns True if it really needed update
         """
@@ -206,7 +248,7 @@ class Proxy(metaclass=ProxyMeta):
 
     def get_contents_queryset(
         self, content_type: str, channel: str, channel_object: str
-    ):
+    ) -> QuerySet:
         return self.content_model.objects.filter(
             app=self.app,
             content_type=content_type,
@@ -227,8 +269,19 @@ class Proxy(metaclass=ProxyMeta):
         return result[1].get(model_label, 0)
 
     def set_last_fetch(
-        self, content_type: str, channel: str, channel_object: str, last_fetch=False
-    ):
+        self,
+        content_type: str,
+        channel: str,
+        channel_object: str,
+        last_fetch: Union[FetchHistoryBase, Literal[False], None] = False,
+    ) -> FetchHistoryBase:
+        """
+        Uodate or create a FetchHistory instance to register the last fetch datetime
+        and return this instance
+        if last_fetch is False, we avoid to query it (because we alreay know it does not exists)
+        if last_fetch is None, we will try to get it via get_last_fetch
+        else, it must be the last_fetch instance.
+        """
         if last_fetch is None:
             last_fetch = self.get_last_fetch(content_type, channel, channel_object)
         if not last_fetch:
@@ -238,10 +291,18 @@ class Proxy(metaclass=ProxyMeta):
                 channel=channel,
                 channel_object=channel_object,
             )
-        last_fetch.last_fetch_dt = timezone.now()
-        last_fetch.save()
+        last_fetch.last_fetch_dt = timezone.now()  # type: ignore
+        last_fetch.save()  # type: ignore
+        return last_fetch  # type: ignore
 
-    def get_last_fetch(self, content_type: str, channel: str, channel_object: str):
+    def get_last_fetch(
+        self, content_type: str, channel: str, channel_object: str
+    ) -> Union[FetchHistoryBase, None]:
+        """
+        Retrieve from the DB the last instance of FetchHistory for the current
+        app, content_type, channel, channel_object
+        or None if it does not exist
+        """
         qs = self.fetch_history_model.objects.filter(app=self.app)
         if content_type:
             qs = qs.filter(content_type=content_type)
