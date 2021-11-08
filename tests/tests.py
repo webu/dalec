@@ -344,6 +344,15 @@ class DalecExempleTests(TestCase):
         for c in self.content_model.objects.all():
             self.assertEqual(c.content_data["libelle_academie"], "Grenoble")
 
+    def test_proxy_channel_object_quoted(self):
+        proxy = ProxyPool.get("exemple")
+        created, updated, deleted = proxy.refresh("hour", "quarter", "24/12/2021 12:00")
+        self.assertEqual(created, 10)
+        self.assertEqual(updated, 0)
+        self.assertEqual(deleted, 0)
+        for c in self.content_model.objects.all():
+            self.assertTrue("/" in c.channel_object)
+
     def test_view_no_channel_object(self):
         kwargs = {"app": "exemple", "content_type": "french_educ"}
         url = reverse("dalec_fetch_content", kwargs=kwargs)

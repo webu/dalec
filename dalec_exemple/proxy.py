@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Dict
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import requests
 
@@ -48,7 +48,11 @@ class ExempleProxy(Proxy):
         i = 0
         contents = {}
         if channel_object:
-            last_dt = parse_datetime(channel_object)
+            if "/" in channel_object:
+                # French format
+                last_dt = datetime.strptime(channel_object, "%d/%m/%Y %H:%M")
+            else:
+                last_dt = parse_datetime(channel_object)
         else:
             last_dt = now()
         minutes = 15 if channel == "quarter" else 30
@@ -66,6 +70,8 @@ class ExempleProxy(Proxy):
                 "creation_dt": new_dt,
                 # some other data
                 "full_representation": str(new_dt),
+                "french_date": datetime.strftime(now(), "%d/%m/%Y"),
+                "french_datetime": datetime.strftime(now(), "%d/%m/%Y %H:%M"),
                 "night": new_dt.hour < 6 or new_dt.hour > 22,
             }
         return contents

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from django.db.models.query import QuerySet
 
 import hashlib
+import urllib.parse
 
 from django.apps import apps
 from django.urls import reverse
@@ -69,6 +70,10 @@ class FetchContentView(ListView):
         Return a TemplateResponse with HTML for the last X elements wanted
         or a 204 response if nothing need an update (cache used or still the same contents)
         """
+        if self.kwargs.get("channel_object", None):
+            self.kwargs["channel_object"] = urllib.parse.unquote(
+                self.kwargs["channel_object"]
+            )
         refreshed = self.refresh_contents()
         if not refreshed:
             # nothing to refresh, our content is already the updated one
@@ -151,7 +156,9 @@ class FetchContentView(ListView):
         if self.dalec_channel:
             url_kwargs["channel"] = self.dalec_channel
             if self.dalec_channel_object:
-                url_kwargs["channel_object"] = self.dalec_channel_object
+                url_kwargs["channel_object"] = urllib.parse.quote(
+                    self.dalec_channel_object, safe=""
+                )
         context.update(
             {
                 "item_template": self.get_item_template(),

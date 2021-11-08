@@ -1,6 +1,7 @@
 # "Standard libs"
 from __future__ import annotations
 from typing import TYPE_CHECKING
+import datetime
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -53,3 +54,32 @@ def dalec(
     context = dalec_view.get_context_data()
     template_obj = select_template(dalec_view.get_template_names())
     return template_obj.render(context)
+
+
+@register.filter(expects_localtime=True, is_safe=False)
+def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.datetime:
+    """
+    API string to datetime object
+
+    Different API retourne date with different format (timezone aware, date, datetime,
+    etc). This filter try to guess the most appropriate one and return a datetime object.
+
+    Params
+    ------
+
+    api_date_format : str
+        Date format of the value. Default '%Y-%m-%dT%H:%M:%S.%f%z',
+        i.e. 2019-08-30T08:22:32.245-0700
+
+    Returns
+    -------
+
+    datetime.datetime object
+    """
+    if value in (None, ""):
+        raise ValueError("No value for the date conversion")
+
+    if api_date_format is None:
+        api_date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+
+    return datetime.datetime.strptime(value, api_date_format)

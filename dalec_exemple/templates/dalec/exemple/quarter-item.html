@@ -1,4 +1,8 @@
 {% extends "dalec/default/item.html" %}
+<!-- load dalec to register templatetags `to_datetime` -->
+{% load dalec %}
 {% block item_content %}
     {{ object.creation_dt|date:"TIME_FORMAT" }}
+    {{ object.content_data.french_date|to_datetime|datetime:"DATE_FORMAT" }}
+    {{ object.content_data.french_datetime|to_datetime|date:"DATE_FORMAT" }}
 {% endblock %}
