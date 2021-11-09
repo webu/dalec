@@ -25,7 +25,7 @@ class FetchHistoryBase(models.Model):
     )
     channel = models.CharField(_("channel"), max_length=50, null=True, blank=True)
     channel_object = models.CharField(
-        _("channel app object id"), max_length=50, null=True, blank=True
+        _("channel app object id"), max_length=255, null=True, blank=True
     )
 
     class Meta:
