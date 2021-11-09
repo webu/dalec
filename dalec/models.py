@@ -63,7 +63,7 @@ class ContentBase(models.Model):
     )
     channel = models.CharField(_("channel"), max_length=50, null=True, blank=True)
     channel_object = models.CharField(
-        _("channel app object id"), max_length=50, null=True, blank=True
+        _("channel app object id"), max_length=255, null=True, blank=True
     )
     dj_channel_content_type = models.ForeignKey(
         ContentType, on_delete=models.CASCADE, blank=True, null=True, related_name="+"
