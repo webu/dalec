@@ -51,6 +51,9 @@ class ExempleProxy(Proxy):
             if "/" in channel_object:
                 # French format
                 last_dt = datetime.strptime(channel_object, "%d/%m/%Y %H:%M")
+            elif "             " in channel_object:
+                # DO NOT DO THAT ! IT'S ONLY FOR TESTING PURPOSE  !!!!
+                last_dt = parse_datetime(channel_object.strip())
             else:
                 last_dt = parse_datetime(channel_object)
         else:

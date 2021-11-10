@@ -10,6 +10,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.timezone import now
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 from bs4 import BeautifulSoup
 
@@ -295,6 +296,20 @@ class DalecTests(TestCase):
         earliest = self.content_model.objects.filter(**kwargs).earliest()
         self.assertEqual(latest.content_data["id"], "23h45")
         self.assertEqual(earliest.content_data["id"], "21h30")
+
+    def test_channel_object_too_long(self):
+        kwargs = {
+            "app": "exemple",
+            "content_type": "hour",
+            "channel": "quarter",
+            "channel_object": "{:256s}".format("2021-12-24 12:00")
+        }
+        url = reverse("dalec_fetch_content", kwargs=kwargs)
+        client = Client()
+        response = client.get(url)
+        latest = self.content_model.objects.last()
+        with self.assertRaisesRegex(ValidationError, "channel_object"):
+            latest.full_clean()
 
     def test_ze_final_test(self):
         print("\n\033[0;32mNothing destroyed… \033[0;33mAnormal for Daleks!\033[31;5m")
