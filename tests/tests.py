@@ -4,6 +4,7 @@ import time
 from copy import copy
 from django.apps import apps
 from django.conf import settings
+from django.template import Context, Template
 from django.template.loader import get_template
 from django.test import Client
 from django.test import TestCase
@@ -16,6 +17,7 @@ from bs4 import BeautifulSoup
 
 from dalec import settings as app_settings
 from dalec.proxy import ProxyPool
+from dalec.views import FetchContentView
 
 
 class DalecTests(TestCase):
@@ -58,13 +60,19 @@ class DalecTests(TestCase):
     @override_settings(
         INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"]
     )
-    def test_missing_dalec_prime(self):
+    def test_missing_dalec_prime_content_model(self):
         with self.assertRaisesRegex(
-            ValueError, "adding dalec_prime to your INSTALLED_APPS"
+            ValueError, "You must define a DALEC_CONTENT_MODEL"
         ):
             reload(app_settings)
+
+    @override_settings(
+        INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"],
+        DALEC_CONTENT_MODEL="tests.Content",
+    )
+    def test_missing_dalec_prime_history_model(self):
         with self.assertRaisesRegex(
-            ValueError, "adding dalec_prime to your INSTALLED_APPS"
+            ValueError, "You must define a DALEC_FETCH_HISTORY_MODEL"
         ):
             reload(app_settings)
 
@@ -124,7 +132,7 @@ class DalecTests(TestCase):
         self.assertEqual(updated, app_settings.NB_CONTENTS_KEPT - created)
         self.assertEqual(deleted, created)
 
-    def test_standard_template_tags(self):
+    def test_standard_template_tags_dalec(self):
         template = get_template("dalec_tests/test-quarter.html")
         url = reverse(
             "dalec_fetch_content",
@@ -165,6 +173,33 @@ class DalecTests(TestCase):
         self.assertNotIn("data-channel-object", div_item.attrs)
         last_quarter = self.content_model.objects.latest()
         self.assertEqual(div_item.string.strip(), last_quarter.content_data["id"])
+
+    def test_standard_template_tags_to_datetime(self):
+        c = Context(
+            {
+                "str_now": str(now()).replace(" ", "T"),
+                "none": None,
+                "empty": "",
+                "format": "%d du mois %m année %Y",
+            }
+        )
+
+        t = Template("""{% load dalec %}{{ none|to_datetime }}""")
+        with self.assertRaisesRegex(ValueError, "No value"):
+            output = t.render(c)
+
+        t = Template("""{% load dalec %}{{ empty|to_datetime }}""")
+        with self.assertRaisesRegex(ValueError, "No value"):
+            output = t.render(c)
+
+        t = Template("""{% load dalec %}{{ str_now|to_datetime }}""")
+        output = t.render(c)
+
+        t = Template(
+            """{% load dalec %}{{ "24 du mois 12 année 2021"|to_datetime:format|date:"d/m/Y" }}"""
+        )
+        output = t.render(c)
+        self.assertEqual(output, "24/12/2021")
 
     def test_proxy_fetch_with_channel_object(self):
         proxy = ProxyPool.get("exemple")
@@ -302,14 +337,116 @@ class DalecTests(TestCase):
             "app": "exemple",
             "content_type": "hour",
             "channel": "quarter",
-            "channel_object": "{:256s}".format("2021-12-24 12:00")
+            "channel_object": "{:256s}".format("2021-12-24 12:00"),
         }
         url = reverse("dalec_fetch_content", kwargs=kwargs)
         client = Client()
-        response = client.get(url)
-        latest = self.content_model.objects.last()
         with self.assertRaisesRegex(ValidationError, "channel_object"):
-            latest.full_clean()
+            client.get(url)
+
+    def test_multiple_channel_objects_request(self):
+        kwargs = {"app": "exemple", "content_type": "hour", "channel": "quarter"}
+        url = reverse("dalec_fetch_content", kwargs=kwargs)
+        client = Client()
+        response = client.post(
+            url,
+            '["2021-12-25 00:00", "2021-12-24 00:00"]',
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        qs = self.content_model.objects.filter(
+            app="exemple", content_type="hour", channel="quarter"
+        )
+        self.assertEqual(qs.filter(channel_object="2021-12-24 00:00").count(), 10)
+        self.assertEqual(qs.filter(channel_object="2021-12-25 00:00").count(), 10)
+
+    def test_multiple_channel_objects_templatetags(self):
+        template = get_template("dalec_tests/test-multiple-hours.html")
+        # Check there is nothing returned because nothing has been retrieved yet
+        output = template.render()
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(len(divs), 1)
+        self.assertEqual(divs[0].string.strip(), "")
+
+        # Let's query the external apps to fetch contents
+        proxy = ProxyPool.get("exemple")
+        created, updated, deleted = proxy.refresh(
+            "hour", "half", channel_object="2021-12-24 00:00"
+        )
+        self.assertEqual(created, 10)
+        created, updated, deleted = proxy.refresh(
+            "hour", "half", channel_object="2021-12-25 00:00"
+        )
+        self.assertEqual(created, 10)
+        output = template.render()
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(len(divs), 1 + created)
+
+    def test_invalid_templatetags_call(self):
+        t = Template(
+            """{% load dalec %}
+        {% dalec "exemple" "hour" channel="quarter" channel_object="A" channel_objects='["B"]' %}
+        """
+        )
+        with self.assertRaisesRegexp(ValueError, "channel_objects"):
+            t.render(Context({}))
+
+    def test_simple_templatetags_call(self):
+        t = Template(
+            """{% load dalec %}
+        {% dalec "exemple" "hour" channel="quarter" channel_object="2021-12-24" %}
+        """
+        )
+        output = t.render(Context({}))
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-24"]')
+        html = (
+            "{% load dalec %}"
+            "{% dalec 'exemple' 'hour' "
+            "channel='quarter' channel_objects='[\"2021-12-24\", \"2021-12-25\"]' %}"
+        )
+        output = Template(html).render(Context({}))
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(
+            divs[0].attrs["data-channel-objects"], '["2021-12-24", "2021-12-25"]'
+        )
+
+    def test_missing_get_for(self):
+        with self.assertRaisesRegexp(AttributeError, "MISSING_SETTING"):
+            app_settings.get_for("MISSING_SETTING", "exemple", raise_if_not_set=True)
+
+    @override_settings(
+        INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"]
+    )
+    def test_missing_history_model_and_dalec_prime(self):
+        with self.assertRaisesRegexp(
+            ValueError, "adding dalec_prime to your INSTALLED_APPS"
+        ):
+            reload(app_settings)
+
+    @override_settings(DALEC_CSS_FRAMEWORK="bootstrap")
+    def test_css_framework_template_names(self):
+        reload(app_settings)
+        dalec_view = FetchContentView(_dalec_template=None)
+        dalec_view.setup(
+            None, app="app", content_type="content_type", channel="channel", page=1
+        )
+        template_names = dalec_view.get_template_names()
+        expected = [
+            "dalec/app/bootstrap/content_type-channel-list.html",
+            "dalec/app/bootstrap/content_type-list.html",
+            "dalec/app/bootstrap/list.html",
+            "dalec/default/bootstrap/list.html",
+            "dalec/app/content_type-channel-list.html",
+            "dalec/app/content_type-list.html",
+            "dalec/app/list.html",
+            "dalec/default/list.html",
+        ]
+        self.assertEqual(template_names, expected)
 
     def test_ze_final_test(self):
         print("\n\033[0;32mNothing destroyed… \033[0;33mAnormal for Daleks!\033[31;5m")

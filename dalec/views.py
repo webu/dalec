@@ -1,4 +1,6 @@
 from __future__ import annotations
+from copy import copy
+import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -42,12 +44,16 @@ class FetchContentView(ListView):
         return self.kwargs["content_type"]
 
     @property
-    def dalec_channel(self) -> str:
+    def dalec_channel(self) -> Union[str, None]:
         return self.kwargs.get("channel", None)
 
     @property
-    def dalec_channel_object(self) -> str:
-        return self.kwargs.get("channel_object", None)
+    def dalec_channel_objects(self) -> List[str]:
+        return self.kwargs.get("channel_objects", [])
+
+    @dalec_channel_objects.setter
+    def dalec_channel_objects(self, channel_objects: List[str]) -> None:
+        self.kwargs["channel_objects"] = channel_objects
 
     @cached_property
     def dalec_template(self) -> Union[str, None]:
@@ -65,15 +71,20 @@ class FetchContentView(ListView):
             "NB_CONTENTS_KEPT", self.dalec_app, self.content_type
         )
 
+    def post(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
+        if request.body:
+            self.dalec_channel_objects = json.loads(self.request.body)
+        return self.get(request, *args, **kwargs)
+
     def get(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
         """
         Return a TemplateResponse with HTML for the last X elements wanted
         or a 204 response if nothing need an update (cache used or still the same contents)
         """
         if self.kwargs.get("channel_object", None):
-            self.kwargs["channel_object"] = urllib.parse.unquote(
-                self.kwargs["channel_object"]
-            )
+            self.dalec_channel_objects = [
+                urllib.parse.unquote(self.kwargs["channel_object"])
+            ]
         refreshed = self.refresh_contents()
         if not refreshed:
             # nothing to refresh, our content is already the updated one
@@ -100,9 +111,11 @@ class FetchContentView(ListView):
         if not self.dalec_channel:
             qs = qs.filter(channel__isnull=True)
         else:
-            qs = qs.filter(
-                channel=self.dalec_channel, channel_object=self.dalec_channel_object
-            )
+            qs = qs.filter(channel=self.dalec_channel)
+            if self.dalec_channel_objects:
+                qs = qs.filter(channel_object__in=self.dalec_channel_objects)
+            else:
+                qs = qs.filter(channel_object__isnull=True)
         return qs
 
     def get_template_names(self, template_type: str = "list") -> List:
@@ -127,7 +140,7 @@ class FetchContentView(ListView):
         ]
         css_framework = app_settings.CSS_FRAMEWORK
         if css_framework:
-            for i, tpl_name in enumerate(tpl_names):
+            for i, tpl_name in enumerate(copy(tpl_names)):
                 parts = tpl_name.rsplit("/", 1)
                 parts.insert(1, css_framework)
                 tpl_names.insert(i, "/".join(parts))
@@ -155,22 +168,21 @@ class FetchContentView(ListView):
         url_kwargs = {"app": self.dalec_app, "content_type": self.dalec_content_type}
         if self.dalec_channel:
             url_kwargs["channel"] = self.dalec_channel
-            if self.dalec_channel_object:
-                url_kwargs["channel_object"] = urllib.parse.quote(
-                    self.dalec_channel_object, safe=""
-                )
         context.update(
             {
                 "item_template": self.get_item_template(),
                 "app": self.dalec_app,
                 "content_type": self.dalec_content_type,
                 "channel": self.dalec_channel,
-                "channel_object": self.dalec_channel_object,
+                "channel_objects": self.dalec_channel_objects,
+                "json_channel_objects": json.dumps(self.dalec_channel_objects),
                 "url": reverse("dalec_fetch_content", kwargs=url_kwargs),
                 "ajax_refresh": app_settings.AJAX_REFRESH,
             }
         )
-        temp_id = "{app}-{content_type}-{channel}-{channel_object}".format(**context)
+        temp_id = "{app}-{content_type}-{channel}-{json_channel_objects}".format(
+            **context
+        )
         context["id"] = hashlib.md5(temp_id.encode("utf-8")).hexdigest()
         if self.dalec_template:
             context["url"] += "?template=%s" % self.dalec_template
@@ -182,7 +194,18 @@ class FetchContentView(ListView):
         there are no new created/updated/deleted content (in this case this view will return a 204)
         """
         proxy = ProxyPool.get(self.dalec_app)
-        created, updated, deleted = proxy.refresh(
-            self.dalec_content_type, self.dalec_channel, self.dalec_channel_object
-        )
-        return bool(created or updated or deleted)
+        something_changed = False
+        if self.dalec_channel_objects:
+            for channel_object in self.dalec_channel_objects:
+                created, updated, deleted = proxy.refresh(
+                    self.dalec_content_type, self.dalec_channel, channel_object
+                )
+                something_changed = something_changed or bool(
+                    created or updated or deleted
+                )
+        else:
+            created, updated, deleted = proxy.refresh(
+                self.dalec_content_type, self.dalec_channel
+            )
+            something_changed = bool(created or updated or deleted)
+        return something_changed

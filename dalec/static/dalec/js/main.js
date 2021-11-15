@@ -5,8 +5,13 @@ function dalec_fetch_content(container){
     fetch(
         data.url,
         {
-            method: "GET",
+            method: "POST",
+            headers: {
+              'Accept': 'text/html',
+              'Content-Type': 'application/json'
+            },
             // cache: "no-cache",
+            body: data.channelObjects,
             keepalive: true,
         }
     ).then(function(response){

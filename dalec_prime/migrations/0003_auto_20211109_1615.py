@@ -5,14 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('dalec_prime', '0002_auto_20211109_1546'),
-    ]
+    dependencies = [("dalec_prime", "0002_auto_20211109_1546")]
 
     operations = [
         migrations.AlterField(
-            model_name='fetchhistory',
-            name='channel_object',
-            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='channel app object id'),
-        ),
+            model_name="fetchhistory",
+            name="channel_object",
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                null=True,
+                verbose_name="channel app object id",
+            ),
+        )
     ]

@@ -9,6 +9,7 @@ from datetime import timedelta, datetime
 import requests
 
 from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
 from django.utils.timezone import now
 
 from dalec.proxy import Proxy
@@ -56,12 +57,13 @@ class ExempleProxy(Proxy):
                 last_dt = parse_datetime(channel_object.strip())
             else:
                 last_dt = parse_datetime(channel_object)
+            if last_dt.tzinfo is None or last_dt.tzinfo.utcoffset(last_dt) is None:
+                last_dt = make_aware(last_dt)
         else:
             last_dt = now()
         minutes = 15 if channel == "quarter" else 30
         last_dt = last_dt - timedelta(minutes=last_dt.minute % minutes)
         last_dt.replace(second=0, microsecond=0)
-
         while i < nb:
             new_dt = last_dt - timedelta(minutes=(minutes * i))
             i += 1

@@ -211,6 +211,7 @@ class Proxy(metaclass=ProxyMeta):
             content_id=content["id"],
             content_data=content,
         )
+        instance.full_clean()
         instance.save()
         return instance
 
@@ -228,6 +229,7 @@ class Proxy(metaclass=ProxyMeta):
         if instance.last_update_dt != new_content["last_update_dt"]:
             instance.last_update_dt = new_content["last_update_dt"]
             update_fields.append("last_update_dt")
+        instance.full_clean()
         instance.save(update_fields=update_fields)
         return True
 
@@ -292,6 +294,7 @@ class Proxy(metaclass=ProxyMeta):
                 channel_object=channel_object,
             )
         last_fetch.last_fetch_dt = timezone.now()  # type: ignore
+        last_fetch.full_clean()  # type: ignore
         last_fetch.save()  # type: ignore
         return last_fetch  # type: ignore
 

@@ -8,7 +8,7 @@
          data-app="{{ app }}" data-content-type="{{ content_type}}"
          {% if channel %}
             data-channel="{{ channel }}"
-            data-channel-object="{{ channel_object }}"
+            data-channel-objects="{{ json_channel_objects }}"
         {% endif %}
     >
         {% for object in object_list %}

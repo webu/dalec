@@ -5,18 +5,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('dalec_prime', '0001_initial'),
-    ]
+    dependencies = [("dalec_prime", "0001_initial")]
 
     operations = [
         migrations.AlterField(
-            model_name='content',
-            name='channel_object',
-            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='channel app object id'),
+            model_name="content",
+            name="channel_object",
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                null=True,
+                verbose_name="channel app object id",
+            ),
         ),
         migrations.AlterIndexTogether(
-            name='content',
-            index_together={('app', 'content_type', 'channel', 'channel_object')},
+            name="content",
+            index_together={("app", "content_type", "channel", "channel_object")},
         ),
     ]

@@ -1,5 +1,6 @@
 # "Standard libs"
 from __future__ import annotations
+import json
 from typing import TYPE_CHECKING
 import datetime
 
@@ -21,6 +22,7 @@ def dalec(
     content_type: str,
     channel: Optional[str] = None,
     channel_object: Optional[str] = None,
+    channel_objects: Optional[str] = None,
     template: Optional[str] = None,
 ) -> str:
     """
@@ -40,14 +42,27 @@ def dalec(
 
     Retrieves recent gitlab issues for a project:
     {% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
+
+    Retrieves recent gitlab issues for multiple projects:
+    {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' %}
     """
+    if channel_object and channel_objects:
+        raise ValueError(
+            "You can not use channel_object AND channel_objects at the same time"
+        )
     dalec_view = FetchContentView(_dalec_template=template)
+    if channel_objects:
+        list_channel_objects = json.loads(channel_objects)
+    elif channel_object:
+        list_channel_objects = [channel_object]
+    else:
+        list_channel_objects = None
     dalec_view.setup(
         context.get("request", None),
         app=app,
         content_type=content_type,
         channel=channel,
-        channel_object=channel_object,
+        channel_objects=list_channel_objects,
         page=1,
     )
     dalec_view.object_list = dalec_view.get_queryset()
