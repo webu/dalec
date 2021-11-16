@@ -11,9 +11,11 @@
             data-channel-objects="{{ json_channel_objects }}"
         {% endif %}
     >
+    {% block dalec_list_items %}
         {% for object in object_list %}
             {% include item_template %}
         {% endfor %}
+    {% endblock %}
     </div>
     {% if ajax_refresh %}
     <script type="text/javascript">
