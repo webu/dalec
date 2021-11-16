@@ -21,7 +21,9 @@ try:
     from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
     from django.utils.functional import classproperty  # type: ignore
+from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 
 from dalec import settings as app_settings
@@ -30,6 +32,7 @@ from dalec.proxy import ProxyPool
 __all__ = ["FetchContentView"]
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class FetchContentView(ListView):
     @classproperty
     def model(cls) -> Type[ContentBase]:
