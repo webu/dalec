@@ -2,27 +2,33 @@
 {% endblock dalec_list_header %}
 
 {% block dalec_list_body %}
-    <div class="dalec-list"
-         id="dalec-{{ id }}"
-         data-url="{{ url }}"
-         data-app="{{ app }}" data-content-type="{{ content_type}}"
-         {% if channel %}
-            data-channel="{{ channel }}"
-            data-channel-objects="{{ json_channel_objects }}"
-        {% endif %}
-    >
+    {% if not request.is_ajax %}
+        <div class="dalec-list"
+            id="dalec-{{ id }}"
+            data-url="{{ url }}"
+            data-app="{{ app }}" data-content-type="{{ content_type}}"
+            {% if channel %}
+                data-channel="{{ channel }}"
+                data-channel-objects="{{ json_channel_objects }}"
+            {% endif %}
+        >
+    {% endif %}
+
     {% block dalec_list_items %}
         {% for object in object_list %}
             {% include item_template %}
         {% endfor %}
     {% endblock %}
-    </div>
-    {% if ajax_refresh %}
-    <script type="text/javascript">
-        window.addEventListener("load", (event) => {
-            dalec_fetch_content(document.getElementById('dalec-{{ id }}'));
-        });
-    </script>
+
+    {% if not request.is_ajax %}
+        </div>
+        {% if ajax_refresh %}
+        <script type="text/javascript">
+            window.addEventListener("load", (event) => {
+                dalec_fetch_content(document.getElementById('dalec-{{ id }}'));
+            });
+        </script>
+        {% endif %}
     {% endif %}
 {% endblock dalec_list_body %}
 
