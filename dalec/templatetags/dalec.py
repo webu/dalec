@@ -95,11 +95,7 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
         raise ValueError("No value for the date conversion")
 
     if api_date_format is None:
-        api_date_format = [
-                "%Y-%m-%dT%H:%M:%S.%f%z",
-                "%Y-%m-%dT%H:%M:%S%z",
-                "%Y-%m-%d"
-                ]
+        api_date_format = ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d"]
     else:
         api_date_format = [api_date_format]
 
