@@ -416,25 +416,35 @@ class DalecTests(TestCase):
         )
 
     def test_ordered_by_templatetags(self):
-        t = Template(
-            """{% load dalec %}
-        {% dalec "exemple" "hour" channel="quarter" channel_object='["2021-12-24", "2021-12-25"]' ordered_by="id" %}
-        """
+        # Let's query the external apps to fetch contents
+        proxy = ProxyPool.get("exemple")
+        created, updated, deleted = proxy.refresh(
+            "hour", "half", channel_object="2021-12-24 12:00"
         )
-        output = t.render(Context({}))
-        soup = BeautifulSoup(output, "html.parser")
-        divs = soup.find_all("div")
-        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-24"]')
 
-        t = Template(
+        # Ascending order by ID
+        t_asc = Template(
             """{% load dalec %}
-        {% dalec "exemple" "hour" channel="quarter" channel_object='["2021-12-24", "2021-12-25"]' ordered_by="-id" %}
+        {% dalec "exemple" "hour" channel="half" channel_object="2021-12-24 12:00" ordered_by="id" %}
         """
         )
-        output = t.render(Context({}))
+        output = t_asc.render(Context({}))
         soup = BeautifulSoup(output, "html.parser")
-        divs = soup.find_all("div")
-        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-25"]')
+        divs = soup.find_all(class_="dalec-item")
+        self.assertIn("07h30", divs[0].string)
+        self.assertIn("12h00", divs[-1].string)
+
+        # Descending order by ID
+        t_desc = Template(
+            """{% load dalec %}
+        {% dalec "exemple" "hour" channel="half" channel_object="2021-12-24 12:00" ordered_by="-id" %}
+        """
+        )
+        output = t_desc.render(Context({}))
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all(class_="dalec-item")
+        self.assertIn("12h00", divs[0].string)
+        self.assertIn("07h30", divs[-1].string)
 
     def test_missing_get_for(self):
         with self.assertRaisesRegexp(AttributeError, "MISSING_SETTING"):

@@ -76,7 +76,9 @@ def dalec(
         if ordered_by.startswith("-"):
             order = "-"
             ordered_by = ordered_by[1:]
-        dalec_view.object_list = dalec_view.object_list.order_by(f"{order}content_data__{ordered_by}")
+        dalec_view.object_list = dalec_view.object_list.order_by(
+            f"{order}content_data__{ordered_by}"
+        )
     context = dalec_view.get_context_data()
     template_obj = select_template(dalec_view.get_template_names())
     return template_obj.render(context)
