@@ -2,6 +2,7 @@
 *.py[co]
 *.pot
 *.egg-info
+*.swp
 .tox/
 __pycache__
 build/
