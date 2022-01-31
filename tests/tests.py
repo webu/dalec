@@ -423,11 +423,12 @@ class DalecTests(TestCase):
         )
 
         # Ascending order by ID
-        t_asc = Template(
-            """{% load dalec %}
-        {% dalec "exemple" "hour" channel="half" channel_object="2021-12-24 12:00" ordered_by="id" %}
-        """
+        html = (
+            "{% load dalec %}"
+            "{% dalec 'exemple' 'hour' channel='half' channel_object='2021-12-24 12:00' "
+            "ordered_by='id' %}"
         )
+        t_asc = Template(html)
         output = t_asc.render(Context({}))
         soup = BeautifulSoup(output, "html.parser")
         divs = soup.find_all(class_="dalec-item")
@@ -435,11 +436,12 @@ class DalecTests(TestCase):
         self.assertIn("12h00", divs[-1].string)
 
         # Descending order by ID
-        t_desc = Template(
-            """{% load dalec %}
-        {% dalec "exemple" "hour" channel="half" channel_object="2021-12-24 12:00" ordered_by="-id" %}
-        """
+        html = (
+            "{% load dalec %}"
+            "{% dalec 'exemple' 'hour' channel='half' channel_object='2021-12-24 12:00' "
+            "ordered_by='-id' %}"
         )
+        t_desc = Template(html)
         output = t_desc.render(Context({}))
         soup = BeautifulSoup(output, "html.parser")
         divs = soup.find_all(class_="dalec-item")

@@ -178,7 +178,7 @@ class Proxy(metaclass=ProxyMeta):
             res = self.create_content(
                 content=new_content,
                 dj_channel_obj=dj_channel_obj,
-                **dalec_kwargs  # type: ignore
+                **dalec_kwargs,  # type: ignore
             )
             if res:
                 nb_created += 1

@@ -49,7 +49,7 @@ def dalec(
 
     Retrieves recent gitlab issues for multiple projects and order them by descending
     issue internal ID (default is `last_update_dt`):
-    {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' ordered_by="-iid" %}
+    {% dalec "gitlab" "issue" channel="project" channel_objects='cybermen' ordered_by="-iid" %}
     """
     if channel_object and channel_objects:
         raise ValueError(
@@ -96,7 +96,8 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
     ------
 
     api_date_format : str
-        Date format of the value. Default '%Y-%m-%dT%H:%M:%S.%f%z',
+        Date format of the value. Default to one of "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S%z" or "%Y-%m-%d".
         i.e. 2019-08-30T08:22:32.245-0700
 
     Returns
@@ -108,13 +109,19 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
         raise ValueError("No value for the date conversion")
 
     if api_date_format is None:
-        api_date_format = ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d"]
+        for date_format in [
+            "%Y-%m-%dT%H:%M:%S.%f%z",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%d",
+        ]:
+            try:
+                return datetime.datetime.strptime(value, date_format)
+            except ValueError:
+                continue
     else:
-        api_date_format = [api_date_format]
-
-    for date_format in api_date_format:
         try:
-            return datetime.datetime.strptime(value, date_format)
+            return datetime.datetime.strptime(value, api_date_format)
         except ValueError:
-            continue
-    return ValueError(f"No given format matching {value}. Given: {api_date_format}")
+            pass
+
+    raise ValueError(f"No given format matching {value}. Given: {api_date_format}")
