@@ -415,6 +415,27 @@ class DalecTests(TestCase):
             divs[0].attrs["data-channel-objects"], '["2021-12-24", "2021-12-25"]'
         )
 
+    def test_ordered_by_templatetags(self):
+        t = Template(
+            """{% load dalec %}
+        {% dalec "exemple" "hour" channel="quarter" channel_object='["2021-12-24", "2021-12-25"]' ordered_by="id" %}
+        """
+        )
+        output = t.render(Context({}))
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-24"]')
+
+        t = Template(
+            """{% load dalec %}
+        {% dalec "exemple" "hour" channel="quarter" channel_object='["2021-12-24", "2021-12-25"]' ordered_by="-id" %}
+        """
+        )
+        output = t.render(Context({}))
+        soup = BeautifulSoup(output, "html.parser")
+        divs = soup.find_all("div")
+        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-25"]')
+
     def test_missing_get_for(self):
         with self.assertRaisesRegexp(AttributeError, "MISSING_SETTING"):
             app_settings.get_for("MISSING_SETTING", "exemple", raise_if_not_set=True)

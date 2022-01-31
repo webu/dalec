@@ -24,6 +24,7 @@ def dalec(
     channel_object: Optional[str] = None,
     channel_objects: Optional[str] = None,
     template: Optional[str] = None,
+    ordered_by: Optional[str] = None,
 ) -> str:
     """
     Show last N contents for a specific app+content_type (and optionnaly channel+channel_object)
@@ -45,6 +46,10 @@ def dalec(
 
     Retrieves recent gitlab issues for multiple projects:
     {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' %}
+
+    Retrieves recent gitlab issues for multiple projects and order them by descending
+    issue internal ID (default is `last_update_dt`):
+    {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' ordered_by="-iid" %}
     """
     if channel_object and channel_objects:
         raise ValueError(
@@ -66,6 +71,12 @@ def dalec(
         page=1,
     )
     dalec_view.object_list = dalec_view.get_queryset()
+    if ordered_by:
+        order = ""
+        if ordered_by.startswith("-"):
+            order = "-"
+            ordered_by = ordered_by[1:]
+        dalec_view.object_list = dalec_view.object_list.order_by(f"{order}content_data__{ordered_by}")
     context = dalec_view.get_context_data()
     template_obj = select_template(dalec_view.get_template_names())
     return template_obj.render(context)
