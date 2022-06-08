@@ -1,16 +1,17 @@
 # "Standard libs"
 from __future__ import annotations
+
+import datetime
 import json
 from typing import TYPE_CHECKING
-import datetime
 
 if TYPE_CHECKING:
     from typing import Optional
 
 from django.template import Library
 from django.template.loader import select_template
-from ..views import FetchContentView
 
+from ..views import FetchContentView
 
 register = Library()
 
@@ -69,16 +70,9 @@ def dalec(
         channel=channel,
         channel_objects=list_channel_objects,
         page=1,
+        ordered_by=ordered_by,
     )
     dalec_view.object_list = dalec_view.get_queryset()
-    if ordered_by:
-        order = ""
-        if ordered_by.startswith("-"):
-            order = "-"
-            ordered_by = ordered_by[1:]
-        dalec_view.object_list = dalec_view.object_list.order_by(
-            f"{order}content_data__{ordered_by}"
-        )
     context = dalec_view.get_context_data()
     template_obj = select_template(dalec_view.get_template_names())
     return template_obj.render(context)

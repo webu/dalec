@@ -11,7 +11,9 @@ function dalec_fetch_content(container){
               'Content-Type': 'application/json'
             },
             // cache: "no-cache",
-            body: data.channelObjects,
+            body: JSON.stringify(
+                {"channelObjects": data.channelObjects, "orderedBy": data.orderedBy}
+            ),
             keepalive: true,
         }
     ).then(function(response){

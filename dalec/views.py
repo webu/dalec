@@ -51,6 +51,14 @@ class FetchContentView(ListView):
         return self.kwargs.get("channel", None)
 
     @property
+    def ordered_by(self) -> Union[str, None]:
+        return self.kwargs.get("ordered_by", None)
+
+    @ordered_by.setter
+    def ordered_by(self, ordered_by: Union[str, None]) -> None:
+        self.kwargs["ordered_by"] = ordered_by
+
+    @property
     def dalec_channel_objects(self) -> List[str]:
         return self.kwargs.get("channel_objects", [])
 
@@ -76,7 +84,9 @@ class FetchContentView(ListView):
 
     def post(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
         if request.body:
-            self.dalec_channel_objects = json.loads(self.request.body)
+            data = json.loads(self.request.body)
+            self.dalec_channel_objects = json.loads(data.get("channelObjects", None))
+            self.ordered_by = data.get("orderedBy", None)
         return self.get(request, *args, **kwargs)
 
     def get(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
@@ -119,6 +129,15 @@ class FetchContentView(ListView):
                 qs = qs.filter(channel_object__in=self.dalec_channel_objects)
             else:
                 qs = qs.filter(channel_object__isnull=True)
+
+        if self.ordered_by:
+            order = ""
+            if self.ordered_by.startswith("-"):
+                order = "-"
+                ordered_by = self.ordered_by[1:]
+            else:
+                ordered_by = self.ordered_by
+            qs = qs.order_by(f"{order}content_data__{ordered_by}")
         return qs
 
     def get_template_names(self, template_type: str = "list") -> List:
@@ -179,8 +198,11 @@ class FetchContentView(ListView):
                 "channel": self.dalec_channel,
                 "channel_objects": self.dalec_channel_objects,
                 "json_channel_objects": json.dumps(self.dalec_channel_objects),
+                "ordered_by": self.ordered_by,
                 "url": reverse("dalec_fetch_content", kwargs=url_kwargs),
                 "ajax_refresh": app_settings.AJAX_REFRESH,
+                "is_fetch": self.request.headers.get("content-type")
+                == "application/json",
             }
         )
         temp_id = "{app}-{content_type}-{channel}-{json_channel_objects}".format(

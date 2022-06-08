@@ -2,7 +2,7 @@
 {% endblock dalec_list_header %}
 
 {% block dalec_list_body %}
-    {% if not request.is_ajax %}
+    {% if not is_fetch %}
         <div class="dalec-list"
             id="dalec-{{ id }}"
             data-url="{{ url }}"
@@ -10,6 +10,9 @@
             {% if channel %}
                 data-channel="{{ channel }}"
                 data-channel-objects="{{ json_channel_objects }}"
+            {% endif %}
+            {% if ordered_by %}
+                data-ordered-by="{{ ordered_by }}"
             {% endif %}
         >
     {% endif %}
@@ -20,7 +23,7 @@
         {% endfor %}
     {% endblock %}
 
-    {% if not request.is_ajax %}
+    {% if not is_fetch %}
         </div>
         {% if ajax_refresh %}
         <script type="text/javascript">
