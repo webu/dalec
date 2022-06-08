@@ -25,10 +25,14 @@
 
     {% if not is_fetch %}
         </div>
+
         {% if ajax_refresh %}
         <script type="text/javascript">
             window.addEventListener("load", (event) => {
-                dalec_fetch_content(document.getElementById('dalec-{{ id }}'));
+              dalecElement = document.getElementById('dalec-{{ id }}');
+              dalecElement.classList.add("dalec-loading");
+              dalec_fetch_content(dalecElement);
+              dalecElement.classList.remove("dalec-loading");
             });
         </script>
         {% endif %}
