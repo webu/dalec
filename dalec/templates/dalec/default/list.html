@@ -30,9 +30,7 @@
         <script type="text/javascript">
             window.addEventListener("load", (event) => {
               dalecElement = document.getElementById('dalec-{{ id }}');
-              dalecElement.classList.add("dalec-loading");
               dalec_fetch_content(dalecElement);
-              dalecElement.classList.remove("dalec-loading");
             });
         </script>
         {% endif %}

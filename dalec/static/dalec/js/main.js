@@ -2,6 +2,7 @@
 
 function dalec_fetch_content(container){
     const data = container.dataset ;
+    container.classList.add("dalec-loading");
     fetch(
         data.url,
         {
@@ -22,10 +23,12 @@ function dalec_fetch_content(container){
             return ;
         }
         if (response.status === 204) {
+            container.classList.remove("dalec-loading");
             return ;
         }
         response.text().then(function (html) {
             container.innerHTML = html ;
+            container.classList.remove("dalec-loading");
         });
     });
 }
