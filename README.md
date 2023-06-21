@@ -63,7 +63,7 @@ INSTALLED_APPS = [
 
 ## Usage
 
-Add `dalec/main.js` inside templates where you need to use the dalec. 
+Add `dalec/js/main.js` inside templates where you need to use the dalec. 
 
 Each dalec's child app will probably need some specific configuration to retrieve external contents 
 (eg: token or login/password). Please refer to this dalec's child app configuration section first.
