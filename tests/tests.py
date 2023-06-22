@@ -1,19 +1,17 @@
-from importlib import reload
 import time
-
 from copy import copy
-from django.apps import apps
-from django.conf import settings
-from django.template import Context, Template
-from django.template.loader import get_template
-from django.test import Client
-from django.test import TestCase
-from django.test.utils import override_settings
-from django.utils.timezone import now
-from django.urls import reverse
-from django.core.exceptions import ValidationError
+from importlib import reload
 
 from bs4 import BeautifulSoup
+from django.apps import apps
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.template import Context, Template
+from django.template.loader import get_template
+from django.test import Client, TestCase
+from django.test.utils import override_settings
+from django.urls import reverse
+from django.utils.timezone import now
 
 from dalec import settings as app_settings
 from dalec.proxy import ProxyPool
@@ -350,7 +348,7 @@ class DalecTests(TestCase):
         client = Client()
         response = client.post(
             url,
-            '["2021-12-25 00:00", "2021-12-24 00:00"]',
+            '{"channelObjects": ["2021-12-25 00:00", "2021-12-24 00:00"]}',
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)

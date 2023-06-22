@@ -1,6 +1,7 @@
 from __future__ import annotations
-from copy import copy
+
 import json
+from copy import copy
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,14 +14,15 @@ import hashlib
 import urllib.parse
 
 from django.apps import apps
-from django.urls import reverse
 from django.http import HttpResponse
 from django.template.loader import select_template
+from django.urls import reverse
 
 try:
     from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
     from django.utils.functional import classproperty  # type: ignore
+
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
@@ -85,7 +87,7 @@ class FetchContentView(ListView):
     def post(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
         if request.body:
             data = json.loads(self.request.body)
-            self.dalec_channel_objects = json.loads(data.get("channelObjects", None))
+            self.dalec_channel_objects = data.get("channelObjects", None)
             self.ordered_by = data.get("orderedBy", None)
         return self.get(request, *args, **kwargs)
 
@@ -201,7 +203,7 @@ class FetchContentView(ListView):
                 "ordered_by": self.ordered_by,
                 "url": reverse("dalec_fetch_content", kwargs=url_kwargs),
                 "ajax_refresh": app_settings.AJAX_REFRESH,
-                "is_fetch": self.request.headers.get("content-type")
+                "is_fetch": self.request and self.request.headers.get("content-type")
                 == "application/json",
             }
         )
