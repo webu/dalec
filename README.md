@@ -6,7 +6,7 @@ generic way independent of the source.
 
 It's designed to be customized / extended to fit your needs.
 
-![Logo de DALEC](logo.png)
+![Logo de DALEC](https://raw.githubusercontent.com/webu/dalec/main/logo.png)
 
 ## Tests, QA, consistency and compatibility
 
