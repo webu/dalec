@@ -203,8 +203,8 @@ class FetchContentView(ListView):
                 "ordered_by": self.ordered_by,
                 "url": reverse("dalec_fetch_content", kwargs=url_kwargs),
                 "ajax_refresh": app_settings.AJAX_REFRESH,
-                "is_fetch": self.request and self.request.headers.get("content-type")
-                == "application/json",
+                "is_fetch": self.request
+                and self.request.headers.get("content-type") == "application/json",
             }
         )
         temp_id = "{app}-{content_type}-{channel}-{json_channel_objects}".format(

@@ -147,7 +147,7 @@ class DalecTests(TestCase):
         self.assertEqual(divs[0].attrs["class"], ["dalec-list"])
         self.assertEqual(divs[0].attrs["data-url"], url)
 
-        # Check there are still nothind (templatetags must not query the external apps)
+        # Check there are still nothing (dalec templatetags must not query the external apps)
         output = template.render()
         soup = BeautifulSoup(output, "html.parser")
         divs = soup.find_all("div")
@@ -179,6 +179,8 @@ class DalecTests(TestCase):
                 "none": None,
                 "empty": "",
                 "format": "%d du mois %m année %Y",
+                "invalid_date": "EX⋅TER⋅MI⋅NA⋅TE!",
+                "invalid_format": "EX⋅TER⋅MI⋅NA⋅TE!",
             }
         )
 
@@ -198,6 +200,14 @@ class DalecTests(TestCase):
         )
         output = t.render(c)
         self.assertEqual(output, "24/12/2021")
+
+        t = Template("""{% load dalec %}{{ invalid_date|to_datetime }}""")
+        with self.assertRaisesRegex(ValueError, "No given format matching"):
+            output = t.render(c)
+
+        t = Template("""{% load dalec %}{{ str_now|to_datetime:format }}""")
+        with self.assertRaisesRegex(ValueError, "No given format matching"):
+            output = t.render(c)
 
     def test_proxy_fetch_with_channel_object(self):
         proxy = ProxyPool.get("exemple")
@@ -358,7 +368,7 @@ class DalecTests(TestCase):
         self.assertEqual(qs.filter(channel_object="2021-12-24 00:00").count(), 10)
         self.assertEqual(qs.filter(channel_object="2021-12-25 00:00").count(), 10)
 
-    def test_multiple_channel_objects_templatetags(self):
+    def test_multiple_channel_objects_dalec_templatetags(self):
         template = get_template("dalec_tests/test-multiple-hours.html")
         # Check there is nothing returned because nothing has been retrieved yet
         output = template.render()
@@ -382,7 +392,7 @@ class DalecTests(TestCase):
         divs = soup.find_all("div")
         self.assertEqual(len(divs), 1 + created)
 
-    def test_invalid_templatetags_call(self):
+    def test_invalid_dalec_templatetags_call(self):
         t = Template(
             """{% load dalec %}
         {% dalec "exemple" "hour" channel="quarter" channel_object="A" channel_objects='["B"]' %}
@@ -391,7 +401,7 @@ class DalecTests(TestCase):
         with self.assertRaisesRegexp(ValueError, "channel_objects"):
             t.render(Context({}))
 
-    def test_simple_templatetags_call(self):
+    def test_simple_dalec_templatetags_call(self):
         t = Template(
             """{% load dalec %}
         {% dalec "exemple" "hour" channel="quarter" channel_object="2021-12-24" %}
@@ -413,7 +423,7 @@ class DalecTests(TestCase):
             divs[0].attrs["data-channel-objects"], '["2021-12-24", "2021-12-25"]'
         )
 
-    def test_ordered_by_templatetags(self):
+    def test_ordered_by_dalec_templatetags(self):
         # Let's query the external apps to fetch contents
         proxy = ProxyPool.get("exemple")
         created, updated, deleted = proxy.refresh(

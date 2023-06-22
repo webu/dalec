@@ -1,0 +1,108 @@
+name: Dalec CI
+
+on: [push, pull_request]
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Current configuration:
+# - django 2.2, python 3.7
+# - django 3.2, python 3.7
+# - django 4.2, python 3.9
+# - django 4.2, python 3.11
+# - django main, python 3.11
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        include:
+          - python: '3.7'
+            django: 'Django>=2.2,<2.3'
+            install_extras: pip install django-jsonfield-backport
+            experimental: false
+          - python: '3.7'
+            django: 'Django>=3.2,<3.3'
+            experimental: false
+          - python: '3.9'
+            django: 'Django>=4.2,<4.3'
+            experimental: false
+          - python: '3.11'
+            django: 'Django>=4.2,<4.3'
+            experimental: false
+          - python: '3.11'
+            django: 'git+https://github.com/django/django.git@main#egg=Django'
+            experimental: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[testing]
+          pip install "${{ matrix.django }}"
+          ${{ matrix.install_extras }}
+      - name: Test
+        run: |
+          coverage run --parallel-mode ./runtests.py
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-data
+          path: .coverage.*
+
+  qa:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install coverage black flake8 mypy types-requests
+
+      - name: Check black
+        run: |
+          black --check ./
+
+      - name: Check flake8
+        run: |
+          flake8
+
+      - name: Check mypy
+        run: |
+          mypy -p dalec -p dalec_prime -p dalec_exemple
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-data
+
+      - name: Combine coverage data
+        run: |
+          coverage combine
+          coverage report -m --skip-covered
+          coverage xml
+
+      - name: Get Cover
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: orgoro/coverage@v3.1
+        with:
+            coverageFile: coverage.xml
+            token: ${{ secrets.GITHUB_TOKEN }}
