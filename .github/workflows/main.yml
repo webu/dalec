@@ -23,6 +23,7 @@ jobs:
         include:
           - python: '3.7'
             django: 'Django>=2.2,<2.3'
+            install_extras: pip install django-jsonfield-backport
             experimental: false
           - python: '3.7'
             django: 'Django>=3.2,<3.3'
