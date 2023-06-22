@@ -1,7 +1,5 @@
-from django.conf.urls import url, include
-from .views import TestView
+from django.urls import include, path
 
 urlpatterns = [
-    url(r"^test/", TestView.as_view(), name="test_view"),
-    url(r"^dalec/", include("dalec.urls")),
+    path("dalec/", include("dalec.urls")),
 ]

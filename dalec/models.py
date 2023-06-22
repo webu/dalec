@@ -1,12 +1,15 @@
 try:
+    # Django imports
     from django.db.models import JSONField  # type: ignore
 except ImportError:
     from django_jsonfield_backport.models import JSONField  # type: ignore
+
+# Django imports
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 __all__ = ["FetchHistoryBase", "ContentBase"]
 

@@ -2,25 +2,38 @@
 {% endblock dalec_list_header %}
 
 {% block dalec_list_body %}
-    <div class="dalec-list"
-         id="dalec-{{ id }}"
-         data-url="{{ url }}"
-         data-app="{{ app }}" data-content-type="{{ content_type}}"
-         {% if channel %}
-            data-channel="{{ channel }}"
-            data-channel-objects="{{ json_channel_objects }}"
-        {% endif %}
-    >
+    {% if not is_fetch %}
+        <div class="dalec-list"
+            id="dalec-{{ id }}"
+            data-url="{{ url }}"
+            data-app="{{ app }}" data-content-type="{{ content_type}}"
+            {% if channel %}
+                data-channel="{{ channel }}"
+                data-channel-objects="{{ json_channel_objects }}"
+            {% endif %}
+            {% if ordered_by %}
+                data-ordered-by="{{ ordered_by }}"
+            {% endif %}
+        >
+    {% endif %}
+
+    {% block dalec_list_items %}
         {% for object in object_list %}
             {% include item_template %}
         {% endfor %}
-    </div>
-    {% if ajax_refresh %}
-    <script type="text/javascript">
-        window.addEventListener("load", (event) => {
-            dalec_fetch_content(document.getElementById('dalec-{{ id }}'));
-        });
-    </script>
+    {% endblock %}
+
+    {% if not is_fetch %}
+        </div>
+
+        {% if ajax_refresh %}
+        <script type="text/javascript">
+            window.addEventListener("load", (event) => {
+              dalecElement = document.getElementById('dalec-{{ id }}');
+              dalec_fetch_content(dalecElement);
+            });
+        </script>
+        {% endif %}
     {% endif %}
 {% endblock dalec_list_body %}
 

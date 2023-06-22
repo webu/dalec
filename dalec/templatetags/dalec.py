@@ -1,16 +1,17 @@
 # "Standard libs"
 from __future__ import annotations
+
+import datetime
 import json
 from typing import TYPE_CHECKING
-import datetime
 
 if TYPE_CHECKING:
     from typing import Optional
 
 from django.template import Library
 from django.template.loader import select_template
-from ..views import FetchContentView
 
+from ..views import FetchContentView
 
 register = Library()
 
@@ -24,6 +25,7 @@ def dalec(
     channel_object: Optional[str] = None,
     channel_objects: Optional[str] = None,
     template: Optional[str] = None,
+    ordered_by: Optional[str] = None,
 ) -> str:
     """
     Show last N contents for a specific app+content_type (and optionnaly channel+channel_object)
@@ -45,6 +47,10 @@ def dalec(
 
     Retrieves recent gitlab issues for multiple projects:
     {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' %}
+
+    Retrieves recent gitlab issues for multiple projects and order them by descending
+    issue internal ID (default is `last_update_dt`):
+    {% dalec "gitlab" "issue" channel="project" channel_objects='cybermen' ordered_by="-iid" %}
     """
     if channel_object and channel_objects:
         raise ValueError(
@@ -64,6 +70,7 @@ def dalec(
         channel=channel,
         channel_objects=list_channel_objects,
         page=1,
+        ordered_by=ordered_by,
     )
     dalec_view.object_list = dalec_view.get_queryset()
     context = dalec_view.get_context_data()
@@ -83,7 +90,8 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
     ------
 
     api_date_format : str
-        Date format of the value. Default '%Y-%m-%dT%H:%M:%S.%f%z',
+        Date format of the value. Default to one of "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S%z" or "%Y-%m-%d".
         i.e. 2019-08-30T08:22:32.245-0700
 
     Returns
@@ -95,6 +103,19 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
         raise ValueError("No value for the date conversion")
 
     if api_date_format is None:
-        api_date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+        for date_format in [
+            "%Y-%m-%dT%H:%M:%S.%f%z",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%d",
+        ]:
+            try:
+                return datetime.datetime.strptime(value, date_format)
+            except ValueError:
+                continue
+    else:
+        try:
+            return datetime.datetime.strptime(value, api_date_format)
+        except ValueError:
+            pass
 
-    return datetime.datetime.strptime(value, api_date_format)
+    raise ValueError(f"No given format matching {value}. Given: {api_date_format}")
