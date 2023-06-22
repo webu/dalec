@@ -209,7 +209,6 @@ class DalecTests(TestCase):
         with self.assertRaisesRegex(ValueError, "No given format matching"):
             output = t.render(c)
 
-
     def test_proxy_fetch_with_channel_object(self):
         proxy = ProxyPool.get("exemple")
         created, updated, deleted = proxy.refresh("hour", "quarter")
