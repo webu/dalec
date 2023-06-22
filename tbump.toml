@@ -54,7 +54,7 @@ src = "dalec/__init__.py"
 
  [[before_commit]]
  name = "run tests"
- cmd = "tox"
+ cmd = "tox -e py39-django22,py39-django32,py39-django42,qa"
 
 # Or run some commands after the git tag and the branch
 # have been pushed:
