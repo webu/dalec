@@ -103,7 +103,7 @@ template by using the templatetag `dalec`:
 ```django
 {% load dalec %}
 
-{% dalec app content_type [channel=None] [channel_object=None] [template=None] [order_by=None] %}
+{% dalec app content_type [channel=None] [channel_object=None] [template=None] [ordered_by=None] %}
 
 real exemples:
 
