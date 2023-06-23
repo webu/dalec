@@ -36,21 +36,21 @@ def dalec(
     Retrieves last gitlab issues for a specific user:
     {% dalec "gitlab" "issue" channel="user" channel_object="doctor-who" %}
 
-    Retrieves recent gitlab activity for a group:
-    {% dalec "gitlab" "activity" channel="group" channel_object='companions' %}
+    Retrieves recent gitlab event for a group:
+    {% dalec "gitlab" "event" channel="group" channel_object='42' %}
 
-    Retrieves recent gitlab activity for a project:
-    {% dalec "gitlab" "activity" channel="project" channel_object='tardis' %}
+    Retrieves recent gitlab event for a project:
+    {% dalec "gitlab" "event" channel="project" channel_object='443' %}
 
     Retrieves recent gitlab issues for a project:
-    {% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
+    {% dalec "gitlab" "issue" channel="project" channel_object='443' %}
 
     Retrieves recent gitlab issues for multiple projects:
-    {% dalec "gitlab" "issue" channel="project" channel_objects='["cybermen", "weeping-angel"]' %}
+    {% dalec "gitlab" "issue" channel="project" channel_objects='["42","443"]' %}
 
     Retrieves recent gitlab issues for multiple projects and order them by descending
     issue internal ID (default is `last_update_dt`):
-    {% dalec "gitlab" "issue" channel="project" channel_objects='cybermen' ordered_by="-iid" %}
+    {% dalec "gitlab" "issue" channel="project" channel_object='42' ordered_by="-iid" %}
     """
     if channel_object and channel_objects:
         raise ValueError(

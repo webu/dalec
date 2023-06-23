@@ -41,6 +41,7 @@ Contents are categorized via :
   * a specific assignee (`channel="assignee"` and `channel_object="<gitlab_user_id>"`)
   * etc.
 * `channel_object`: the ID (for the app requested) of the channel's related object
+* `channel_objects`: the list of IDs (for the app requested) of the channel's related objects (eg. `"['42','443']"`)
 
 Before you ask: yes, some contents can be duplicated (eg. an issue from the "group" channel 
 could be duplicated in the "project" channel). It's normal and **wanted**. Remember : the purpose
@@ -77,6 +78,18 @@ INSTALLED_APPS = [
 ]
 ```
 
+And in your `urls.py`:
+
+```python
+# urls.py
+
+url_patterns = [
+  ...
+  re_path("^dalec/", include("dalec.urls")),
+  ...
+]
+```
+
 ## Usage
 
 Add `dalec/js/main.js` inside templates where you need to use the dalec. 
@@ -85,37 +98,44 @@ Each dalec's child app will probably need some specific configuration to retriev
 (eg: token or login/password). Please refer to this dalec's child app configuration section first.
 
 Now your dalec's child app is configured, you can display it's X last contents somewhere in a 
-template by using the templatag `dalec`:
+template by using the templatetag `dalec`:
 
 ```django
 {% load dalec %}
 
-{% dalec app content_type [channel=None] [channel_object=None] [template=None] %}
+{% dalec app content_type [channel=None] [channel_object=None] [template=None] [order_by=None] %}
 
 real exemples:
 
 Retrieves last gitlab issues for a specific user:
 {% dalec "gitlab" "issue" channel="user" channel_object="doctor-who" %}
 
-Retrieves recent gitlab activity for a group:
-{% dalec "gitlab" "activity" channel="group" channel_object='companions' %}
+Retrieves recent gitlab event for a group:
+{% dalec "gitlab" "event" channel="group" channel_object='42' %}
 
-Retrieves recent gitlab activity for a project:
-{% dalec "gitlab" "activity" channel="project" channel_object='tardis' %}
+Retrieves recent gitlab event for a project:
+{% dalec "gitlab" "event" channel="project" channel_object='443' %}
 
 Retrieves recent gitlab issues for a project:
-{% dalec "gitlab" "issue" channel="project" channel_object='tardis' %}
+{% dalec "gitlab" "issue" channel="project" channel_object='404' %}
+
+Retrieves recent gitlab issues for multiple projects:
+{% dalec "gitlab" "issue" channel="project" channel_objects='["42","443"]' %}
+
+Retrieves recent gitlab issues for multiple projects and order them by descending
+issue internal ID (default is `last_update_dt`):
+{% dalec "gitlab" "issue" channel="project" channel_object='42' ordered_by="-iid" %}
 ```
 
 ### dalec_exemple
 
-An exemple app is packaged to get a working exemple which does not require any extra configuration.
+An example app is packaged to get a working example which does not require any extra configuration.
 
 * add `dalec_exemple`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
 * run migrations
 * include dalec.urls inside your project's urls
-* add `dalec/main.js` inside your base.html or inside the template where you want to display the exemple
-* add those fragments of code inside the template where you want to display the exemple:
+* add `dalec/main.js` inside your base.html or inside the template where you want to display the example
+* add those fragments of code inside the template where you want to display the example:
 
 ```django
 {% load dalec %}
@@ -136,8 +156,8 @@ This app have general settings which can be erased for all of it's children and 
 content type.
 
 * General setting format : `DALEC_SOMETHING`
-* overided child version (it's app name, like gitlab for exemple): `DALEC_GITLAB_SOMETHING`
-* overided content type version (gitlab's issues for exemple): `DALEC_GITLAB_ISSUE_SOMETHING`
+* override child version (it's app name, like gitlab for exemple): `DALEC_GITLAB_SOMETHING`
+* override content type version (gitlab's issues for exemple): `DALEC_GITLAB_ISSUE_SOMETHING`
 
 ### DALEC_NB_CONTENTS_KEPT
 
@@ -194,7 +214,7 @@ Name of the (S)CSS framework you use on your website. It changes the default tem
 display contents. Templates are priorized in this order (`css_framework` versions only used if 
 you set a value to `DALEC_CSS_FRAMEWORK`):
 
-* `dalec/%(app)s/%(tpl)s-list.html`: only if you use a specific template, see templatags `dalec`
+* `dalec/%(app)s/%(tpl)s-list.html`: only if you use a specific template, see templatetag `dalec`
 * `dalec/%(app)s/%(css_framework)s/%(content_type)s-%(channel)s-list.html`
 * `dalec/%(app)s/%(content_type)s-%(channel)s-list.html`
 * `dalec/%(app)s/%(css_framework)s/%(content_type)s-list.html`
@@ -271,11 +291,11 @@ If you want to use your own model, in your `settings.py`:
   get last messages or topics from a discourse instance
 * 🔗 [dalec-openproject](https://github.com/webu/dalec-openproject/):
   get tasks from an openproject instance
+* 📅 [dalec-caldav](https://github.com/webu/dalec-caldav/): events and tasks from a caldav instance (eg: nextcloud agenda)
 
 ## External sources which could be nice to support
 
 * 🌍 dalec-mediawiki: get last pages from a mediawiki instance
-* 📅 dalec-caldav: get events and tasks from a caldav instance (eg: nextcloud agenda)
 * 📂 dalec-webdav: get lastmodified files from a webdav instance (eg: nextcloud files)
 * 📰 dalec-feedparser: get contents from atom and rss feeds
 * 📫 dalec-imap: get emails from imap instance
@@ -315,6 +335,6 @@ directly related to them.
 This project was made possible thanks to the 
 [Open Space Maker Federation](https://www.federation-openspacemakers.com) whose goal is to open 
 up the world of space infrastructure to as many people as possible.  
-They need boards to aggregate contents from differents sources (gitlab, discourse…). 
-We ([Webu](https://www.webu.coop))didn't find any applications which fit our needs, 
+They need boards to aggregate contents from different sources (gitlab, discourse…). 
+We ([Webu](https://www.webu.coop)) didn't find any applications which fit our needs, 
 so we create a new one and released it under the MIT licence.
