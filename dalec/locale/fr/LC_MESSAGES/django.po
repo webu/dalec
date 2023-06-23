@@ -6,58 +6,58 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dalec\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-21 17:45+0200\n"
-"PO-Revision-Date: 2021-10-21 18:02+0200\n"
+"POT-Creation-Date: 2023-06-23 00:45+0200\n"
+"PO-Revision-Date: 2023-06-23 00:46+0200\n"
+"Last-Translator: Dylann CORDEL\n"
+"Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Last-Translator: Dylann CORDEL\n"
-"Language-Team: \n"
-"X-Generator: Poedit 2.2.1\n"
-"Language: fr\n"
+"X-Generator: Poedit 2.4.2\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: models.py:16
+#: dalec/models.py:23
 msgid "last fetch datetime"
 msgstr "date/heure de la dernière récupération"
 
-#: models.py:22 models.py:75
+#: dalec/models.py:25 dalec/models.py:63
 msgid "dalec app"
 msgstr "application dalec"
 
-#: models.py:28 models.py:81
+#: dalec/models.py:27 dalec/models.py:65
 msgid "content type"
 msgstr "type de contenu"
 
-#: models.py:34 models.py:87
+#: dalec/models.py:29 dalec/models.py:67
 msgid "channel"
 msgstr "canal"
 
-#: models.py:40 models.py:93
+#: dalec/models.py:31 dalec/models.py:69
 msgid "channel app object id"
 msgstr "id de l'objet du canal au sein de l'app"
 
-#: models.py:47
+#: dalec/models.py:35
 msgid "Content fetch history line"
 msgstr "Ligne d'historique de récupération du contenu"
 
-#: models.py:48
+#: dalec/models.py:36
 msgid "Content fetch history lines"
 msgstr "Lignes d'historique de récupération du contenu"
 
-#: models.py:59
+#: dalec/models.py:48
 msgid "last update datetime (on external source)"
 msgstr "date/heure de dernière mise à jour (sur la source externe)"
 
-#: models.py:67
+#: dalec/models.py:56
 msgid "created datetime (on external source)"
 msgstr "date/heure de création (sur la source externe)"
 
-#: models.py:106
+#: dalec/models.py:75
 msgid "related object"
 msgstr "objet lié"
 
-#: models.py:110
+#: dalec/models.py:79
 msgid ""
 "The django's model's instance which is concerned.(eg. could be an instance "
 "of model `Project` for app=gitlab, content_type=issue, channel=project)"
@@ -65,11 +65,11 @@ msgstr ""
 "L'instance de modèle django qui est concernée (ex: peut être une instance "
 "d'un modèle `Project` pour app=gitlab, content_type=issue, channel=project)"
 
-#: models.py:126
+#: dalec/models.py:91
 msgid "content"
 msgstr "contenu"
 
-#: models.py:129
+#: dalec/models.py:95
 msgid ""
 "The django's model's instance which is concerned (eg. could be an instance "
 "of model `Issue` for dalec-gitlab)"
@@ -77,18 +77,18 @@ msgstr ""
 "L'instance de modèle django qui est concernée (ex: peut être une instance "
 "d'un modèle `Issue` pour dalec-gitlab)"
 
-#: models.py:137
+#: dalec/models.py:103
 msgid "app's content id"
 msgstr "id du contenu dans l'app"
 
-#: models.py:141
+#: dalec/models.py:107
 msgid "ID of the content inside the external app."
 msgstr "ID du contenu au sein de l'app externe."
 
-#: models.py:148
+#: dalec/models.py:112
 msgid "Content"
 msgstr "Contenu"
 
-#: models.py:149
+#: dalec/models.py:113
 msgid "Contents"
 msgstr "Contenus"

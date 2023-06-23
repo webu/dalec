@@ -6,7 +6,23 @@ generic way independent of the source.
 
 It's designed to be customized / extended to fit your needs.
 
-![Logo de DALEC](logo.png)
+![Logo de DALEC](https://raw.githubusercontent.com/webu/dalec/main/logo.png)
+
+## Tests, QA, consistency and compatibility
+
+This app is tested to runs with:
+
+* Django 2.2, 3.2, 4.2
+* Python 3.7, 3.9, 3.11
+
+To ensure code quality and consistency:
+
+* Formatted with [black](https://pypi.org/project/black/)
+* Validated with [flake8](https://pypi.org/project/flake8/). 
+* Static types checked with [mypy](https://pypi.org/project/mypy/)
+* Tests coverage checked with [coverage](https://pypi.org/project/coverage/) (100% tested)
+* Tests runned in local via [tox](https://pypi.org/project/tox/) and on github via [github actions workflow](https://docs.github.com/en/actions/using-workflows)
+* versionned with [semver](https://semver.org) logic
 
 ## Concepts
 
@@ -54,7 +70,7 @@ Then, add `dalec`, `dalec_prime` and dalec's children to `INSTALLED_APPS` in `se
 INSTALLED_APPS = [
     # …
     "dalec",
-    "dalec_prime",  # if you want to use your own Content model, does not add it
+    "dalec_prime",  # if you want to use your own Content model, don't add it
     "dalec_gitlab",
     "dalec_nextcloud",
     # …

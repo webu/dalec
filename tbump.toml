@@ -1,5 +1,5 @@
 [version]
-current = "0.1.1"
+current = "0.1.2-rc.2"
 
 # valid versions:
 # we use semver
@@ -53,8 +53,8 @@ src = "dalec/__init__.py"
 # and before the git commit is made
 
  [[before_commit]]
- name = "check changelog"
- cmd = "black ./"
+ name = "run tests"
+ cmd = "tox -e py39-django22,py39-django32,py39-django42,qa"
 
 # Or run some commands after the git tag and the branch
 # have been pushed:
