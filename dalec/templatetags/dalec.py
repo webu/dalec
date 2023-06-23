@@ -46,7 +46,7 @@ def dalec(
     {% dalec "gitlab" "issue" channel="project" channel_object='443' %}
 
     Retrieves recent gitlab issues for multiple projects:
-    {% dalec "gitlab" "issue" channel="project" channel_objects='["42","443"]' %}
+    {% dalec "gitlab" "issue" channel="project" channel_objects='["42", "443"]' %}
 
     Retrieves recent gitlab issues for multiple projects and order them by descending
     issue internal ID (default is `last_update_dt`):

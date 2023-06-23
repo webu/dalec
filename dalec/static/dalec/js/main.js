@@ -13,7 +13,7 @@ function dalec_fetch_content(container){
             },
             // cache: "no-cache",
             body: JSON.stringify(
-                {"channelObjects": data.channelObjects, "orderedBy": data.orderedBy}
+                {"channelObjects": JSON.parse(data.channelObjects), "orderedBy": data.orderedBy}
             ),
             keepalive: true,
         }
