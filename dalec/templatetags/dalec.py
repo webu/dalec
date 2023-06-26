@@ -90,8 +90,10 @@ def to_datetime(value: str, api_date_format: Optional[str] = None) -> datetime.d
     ------
 
     api_date_format : str
-        Date format of the value. Default to one of "%Y-%m-%dT%H:%M:%S.%f%z",
-        "%Y-%m-%dT%H:%M:%S%z" or "%Y-%m-%d".
+        Date format of the value. Default to one of
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S%z" or
+        "%Y-%m-%d".
         i.e. 2019-08-30T08:22:32.245-0700
 
     Returns
