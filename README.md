@@ -1,5 +1,14 @@
 # Django Aggregator of a Lot of External Contents aka DALEC 🤖
 
+[![Stable Version](https://img.shields.io/pypi/v/dalec?color=blue)](https://pypi.org/project/dalec/)
+![](https://img.shields.io/badge/python-3.7%20to%203.11-blue)
+![](https://img.shields.io/badge/django-2.2%20to%204.2-blue)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![](https://img.shields.io/badge/coverage-100%25-green)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![semver](https://img.shields.io/badge/semver-2.0.0-green)](https://semver.org/)
+
 Django Aggregator of a Lot of External Contents (DALEC) is a generic app to aggregate contents from various
 external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
 generic way independent of the source.
@@ -50,6 +59,31 @@ talking about is in the `last N issues of project "cybermen"`, it does not mean 
 `the last N issues of group "dr-who-best-friends"`. To manage different timelines for each channel,
 and keep a KISS Model, we need those duplicates.
 
+## External sources supported
+
+* 🦝 [dalec-gitlab](https://github.com/webu/dalec-gitlab/):
+  get issues and activities from a gitlab instance
+* ☁ [dalec-nextcloud](https://github.com/webu/dalec-nextcloud/):
+  get events and activities from a nextcloud instance
+* 🗣 [dalec-discourse](https://github.com/webu/dalec-discourse/):
+  get last messages or topics from a discourse instance
+* 🔗 [dalec-openproject](https://github.com/webu/dalec-openproject/):
+  get tasks from an openproject instance
+* 📅 [dalec-caldav](https://github.com/webu/dalec-caldav/): events and tasks from a caldav instance (eg: nextcloud agenda)
+
+## External sources which could be nice to support
+
+* 🌍 dalec-mediawiki: get last pages from a mediawiki instance
+* 📂 dalec-webdav: get lastmodified files from a webdav instance (eg: nextcloud files)
+* 📰 dalec-feedparser: get contents from atom and rss feeds
+* 📫 dalec-imap: get emails from imap instance
+* 🐥 dalec-mastodon: get toots from a mastodon instance
+* 📺 dalec-peertube: get last uploaded videos from a peertube instance
+* 🌵 dalec-git: get last commits from a git repository
+* 🐱 dalec-github: get issues, pull-requests, activity from github
+* 🐦 dalec-twitter: get tweets from twitter
+* 🎞 dalec-youtube: get last uploaded videos from youtube
+* 🎥 dalec-imdb: get last movies from imdb
 
 ## Installation
 
@@ -280,32 +314,6 @@ If you want to use your own model, in your `settings.py`:
 
 * remove `dalec.prime` from `INSTALLED_APPS`
 * set the setting `DALEC_CONTENT_MODEL` with `<yourapp>.<yourModel>`
-
-## External sources supported
-
-* 🦝 [dalec-gitlab](https://github.com/webu/dalec-gitlab/):
-  get issues and activities from a gitlab instance
-* ☁ [dalec-nextcloud](https://github.com/webu/dalec-nextcloud/):
-  get events and activities from a nextcloud instance
-* 🗣 [dalec-discourse](https://github.com/webu/dalec-discourse/):
-  get last messages or topics from a discourse instance
-* 🔗 [dalec-openproject](https://github.com/webu/dalec-openproject/):
-  get tasks from an openproject instance
-* 📅 [dalec-caldav](https://github.com/webu/dalec-caldav/): events and tasks from a caldav instance (eg: nextcloud agenda)
-
-## External sources which could be nice to support
-
-* 🌍 dalec-mediawiki: get last pages from a mediawiki instance
-* 📂 dalec-webdav: get lastmodified files from a webdav instance (eg: nextcloud files)
-* 📰 dalec-feedparser: get contents from atom and rss feeds
-* 📫 dalec-imap: get emails from imap instance
-* 🐥 dalec-mastodon: get toots from a mastodon instance
-* 📺 dalec-peertube: get last uploaded videos from a peertube instance
-* 🌵 dalec-git: get last commits from a git repository
-* 🐱 dalec-github: get issues, pull-requests, activity from github
-* 🐦 dalec-twitter: get tweets from twitter
-* 🎞 dalec-youtube: get last uploaded videos from youtube
-* 🎥 dalec-imdb: get last movies from imdb
 
 ## Manage a new external source
 
