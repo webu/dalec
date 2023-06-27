@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 permissions:
   pull-requests: write
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -96,15 +97,15 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Combine coverage data
+      - name: Save PR number and combine coverage data
         run: |
+          mkdir -p ./pr
           coverage combine
-          coverage report -m --skip-covered
-          coverage xml
+          coverage report -m --format="markdown" > ./pr/coverage.md
+          coverage report --format="total" > ./pr/coverage_total
+          echo ${{ github.event.number }} > ./pr/NR
 
-      - name: Get Cover
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: orgoro/coverage@v3.1
+      - uses: actions/upload-artifact@v2
         with:
-            coverageFile: coverage.xml
-            token: ${{ secrets.GITHUB_TOKEN }}
+          name: pr
+          path: pr/
