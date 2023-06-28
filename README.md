@@ -13,7 +13,7 @@ Django Aggregator of a Lot of External Contents (DALEC) is a generic app to aggr
 external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
 generic way independent of the source.
 
-TEST COVERAGE
+TEST COVERAGE 2
 
 It's designed to be customized / extended to fit your needs.
 
