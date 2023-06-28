@@ -9,9 +9,8 @@ on:
 
 jobs:
   qa:
-    needs:
-      - test
     runs-on: ubuntu-latest
+    name: check and coverage
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
