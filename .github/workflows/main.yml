@@ -2,8 +2,7 @@ name: Dalec CI
 
 on: [push, pull_request]
 
-permissions:
-  pull-requests: write-all
+permissions: write-all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
