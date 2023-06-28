@@ -20,6 +20,7 @@ from dalec.views import FetchContentView
 
 __all__ = ["DalecTests"]
 
+
 class DalecTests(DalecTestCaseMixin, TestCase):
     @override_settings(
         DALEC_EXEMPLE_NB_CONTENTS_KEPT=15,

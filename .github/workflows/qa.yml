@@ -44,13 +44,15 @@ jobs:
             var issue_number = Number(fs.readFileSync('./NR'));
             var coverage = fs.readFileSync('./coverage.md');
             var coverage_total = fs.readFileSync('./coverage_total');
-            if (coverage_total > 90) {
+            if (coverage_total == 100) {
+              emoji='🦄';
+            } else if (coverage_total >= 95) {
               emoji='🏆';
-            } else if (coverage_total > 80) {
+            } else if (coverage_total >= 90) {
               emoji='🥇';
-            } else if (coverage_total > 70) {
+            } else if (coverage_total >= 85) {
               emoji='🥈';
-            } else if (coverage_total > 60) {
+            } else if (coverage_total >= 80) {
               emoji='🥉';
             } else {
               emoji='❌';
