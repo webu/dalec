@@ -6,21 +6,21 @@ from dalec import settings as app_settings
 
 
 class DalecTestCaseMixin:
-    def tearDown(self):
+    def tearDown(self) -> None:
         """
         reload settings after a test which could have overrided settings
         """
         reload(app_settings)
 
     @property
-    def content_model(self):
+    def content_model(self) -> app_settings.CONTENT_MODEL:
         return apps.get_model(app_settings.CONTENT_MODEL)
 
     @property
-    def fetch_history_model(self):
+    def fetch_history_model(self) -> app_settings.FETCH_HISTORY_MODEL:
         return apps.get_model(app_settings.FETCH_HISTORY_MODEL)
 
-    def test_ze_final_test(self):
+    def test_ze_final_test(self) -> None:
         print("\n\033[0;32mNothing destroyed… \033[0;33mAnormal for Daleks!\033[31;5m")
         print("+" + "-" * 61 + "+")
         print("| " + ("Daleks conquer and destroy!!! " * 2) + "|")
