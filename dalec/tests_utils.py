@@ -1,7 +1,6 @@
 from importlib import reload
 
 from django.apps import apps
-from django.test import TestCase
 
 from dalec import settings as app_settings
 
