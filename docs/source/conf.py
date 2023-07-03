@@ -18,7 +18,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "tests.settings"
 django.setup()
 
 
-from dalec import __version__ as dalec_version
+from dalec import __version__ as dalec_version  # noqa
 
 project = "Dalec"
 copyright = "2023, Webu"
