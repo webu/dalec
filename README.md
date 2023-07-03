@@ -94,7 +94,7 @@ For 3.1+, you **MUST** use a DB supporting the official
 [django's `JSONField`](https://docs.djangoproject.com/fr/3.1/ref/models/fields/#jsonfield).
 
 You **SHOULD NOT** install this app but you **SHOULD** install one (or more) of it's children 
-(see [external sources supported](#External-sources-supported)). eg:
+(see [](#external-sources-supported)). eg:
 
 `pip install dalec-gitlab dalec-nextcloud`
 
@@ -169,7 +169,7 @@ An example app is packaged to get a working example which does not require any e
 * add `dalec_exemple`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
 * run migrations
 * include dalec.urls inside your project's urls
-* add `dalec/main.js` inside your base.html or inside the template where you want to display the example
+* add `dalec/js/main.js` inside your base.html or inside the template where you want to display the example
 * add those fragments of code inside the template where you want to display the example:
 
 ```django
@@ -196,7 +196,7 @@ content type.
 
 ### DALEC_NB_CONTENTS_KEPT
 
-* * *default*: `10`
+* *default*: `10`
 * per child app setting: yes
 * per child app's content type setting: yes
 
