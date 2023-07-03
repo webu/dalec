@@ -241,9 +241,10 @@ class Proxy(metaclass=ProxyMeta):
         Fetch updated contents from the source and return it as a dict of dict:
         main dict keys MUST be the app's content id, and value must be the content representation
         with at least three required attrs:
-            id: ID of the content inside the external app
-            last_update_dt: last update datetime inside the external app
-            creation_dt: creation datetime inside the external app
+
+        - `id`: ID of the content inside the external app
+        - `last_update_dt`: last update datetime inside the external app
+        - `creation_dt`: creation datetime inside the external app
         """
         raise NotImplementedError(
             "You MUST implement your own _feth method depending your external source"
