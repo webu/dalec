@@ -23,9 +23,9 @@ __all__ = ["DalecTests"]
 
 class DalecTests(DalecTestCaseMixin, TestCase):
     @override_settings(
-        DALEC_EXEMPLE_NB_CONTENTS_KEPT=15,
-        DALEC_EXEMPLE_FRENCH_EDUC_NB_CONTENTS_KEPT=20,
-        DALEC_EXEMPLE_CONTENT_TYPE_NB_CONTENTS_KEPT=30,
+        DALEC_EXAMPLE_NB_CONTENTS_KEPT=15,
+        DALEC_EXAMPLE_FRENCH_EDUC_NB_CONTENTS_KEPT=20,
+        DALEC_EXAMPLE_CONTENT_TYPE_NB_CONTENTS_KEPT=30,
     )
     def test_overrided_settings_app(self):
         """
@@ -33,15 +33,15 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         """
         reload(app_settings)
         self.assertEqual(app_settings.NB_CONTENTS_KEPT, 10)
-        self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "exemple"), 15)
+        self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "example"), 15)
         self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "exemple", "quarter"), 15
+            app_settings.get_for("NB_CONTENTS_KEPT", "example", "quarter"), 15
         )
         self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "exemple", "french_educ"), 20
+            app_settings.get_for("NB_CONTENTS_KEPT", "example", "french_educ"), 20
         )
         self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "exemple", "content-type"), 30
+            app_settings.get_for("NB_CONTENTS_KEPT", "example", "content-type"), 30
         )
 
     @override_settings(
@@ -80,7 +80,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(content_model.objects.count(), 0)
         self.assertEqual(fetch_history_model.objects.count(), 0)
 
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("hour", "quarter")
 
         self.assertEqual(content_model.objects.count(), 10)
@@ -99,7 +99,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
     @override_settings(DALEC_TTL=1)
     def test_proxy_fetch_and_ttl(self):
         reload(app_settings)
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("hour", "quarter")
         self.assertEqual(created, app_settings.NB_CONTENTS_KEPT)
         self.assertEqual(updated, 0)
@@ -123,7 +123,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         template = get_template("dalec_tests/test-quarter.html")
         url = reverse(
             "dalec_fetch_content",
-            kwargs={"app": "exemple", "content_type": "hour", "channel": "quarter"},
+            kwargs={"app": "example", "content_type": "hour", "channel": "quarter"},
         )
         # Check there is nothing returned because nothing has been retrieved yet
         output = template.render()
@@ -144,7 +144,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(divs[0].string.strip(), "")
 
         # Let's query the external apps to fetch contents
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("hour", "quarter")
         self.assertEqual(created, 10)
         output = template.render()
@@ -154,7 +154,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
         div_item = divs[1]
         self.assertEqual(div_item.attrs["class"], ["dalec-item"])
-        self.assertEqual(div_item.attrs["data-app"], "exemple")
+        self.assertEqual(div_item.attrs["data-app"], "example")
         self.assertEqual(div_item.attrs["data-content-type"], "hour")
         self.assertEqual(div_item.attrs["data-channel"], "quarter")
         self.assertNotIn("data-channel-object", div_item.attrs)
@@ -199,13 +199,13 @@ class DalecTests(DalecTestCaseMixin, TestCase):
             output = t.render(c)
 
     def test_proxy_fetch_with_channel_object(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("hour", "quarter")
         self.assertEqual(created, app_settings.NB_CONTENTS_KEPT)
         self.assertEqual(updated, 0)
         self.assertEqual(deleted, 0)
 
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         channel_object = "1985-07-02 21:45:00Z"
         created, updated, deleted = proxy.refresh("hour", "quarter", channel_object)
         self.assertEqual(created, app_settings.NB_CONTENTS_KEPT)
@@ -218,7 +218,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(all_contents.filter(channel_object=channel_object).count(), 10)
 
     def test_ordering_and_latest(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh(
             "hour", "quarter", "1985-07-02 21:45:00Z"
         )
@@ -245,22 +245,22 @@ class DalecTests(DalecTestCaseMixin, TestCase):
             AdiposianProxy().refresh("adipose")
 
     def test_proxy_pool_autoload(self):
-        proxy = ProxyPool.get("exemple")
-        from dalec_exemple.proxy import ExempleProxy
+        proxy = ProxyPool.get("example")
+        from dalec_example.proxy import ExampleProxy
 
-        self.assertTrue(isinstance(proxy, ExempleProxy))
+        self.assertTrue(isinstance(proxy, ExampleProxy))
 
-        exemple_proxy = ProxyPool.unregister("exemple")
-        self.assertEqual(exemple_proxy, proxy)
-
-        with self.assertRaisesRegex(ValueError, "No proxy registered"):
-            ProxyPool.get("exemple", autoload=False)
+        example_proxy = ProxyPool.unregister("example")
+        self.assertEqual(example_proxy, proxy)
 
         with self.assertRaisesRegex(ValueError, "No proxy registered"):
-            ProxyPool.get("exemple")
+            ProxyPool.get("example", autoload=False)
 
-        ProxyPool.register(exemple_proxy)
-        self.assertEqual(ProxyPool.get("exemple"), proxy)
+        with self.assertRaisesRegex(ValueError, "No proxy registered"):
+            ProxyPool.get("example")
+
+        ProxyPool.register(example_proxy)
+        self.assertEqual(ProxyPool.get("example"), proxy)
 
         with self.assertRaisesRegex(ValueError, "impossible to autoload"):
             proxy = ProxyPool.get("weeping_angel")
@@ -289,7 +289,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertFalse(res)
 
     def test_view_response_code(self):
-        kwargs = {"app": "exemple", "content_type": "hour", "channel": "quarter"}
+        kwargs = {"app": "example", "content_type": "hour", "channel": "quarter"}
         url = reverse("dalec_fetch_content", kwargs=kwargs)
         client = Client()
         qs = self.content_model.objects.filter(**kwargs)
@@ -305,7 +305,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(qs.count(), 10)
 
     def test_view_custom_template(self):
-        kwargs = {"app": "exemple", "content_type": "hour", "channel": "quarter"}
+        kwargs = {"app": "example", "content_type": "hour", "channel": "quarter"}
         url = reverse("dalec_fetch_content", kwargs=kwargs)
         client = Client()
         response = client.get(url + "?template=faceof")
@@ -314,7 +314,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
     def test_view_channel_object(self):
         kwargs = {
-            "app": "exemple",
+            "app": "example",
             "content_type": "hour",
             "channel": "quarter",
             "channel_object": "1985-07-02 23:45:00Z",
@@ -331,7 +331,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
     def test_channel_object_too_long(self):
         kwargs = {
-            "app": "exemple",
+            "app": "example",
             "content_type": "hour",
             "channel": "quarter",
             "channel_object": "{:256s}".format("2021-12-24 12:00"),
@@ -342,7 +342,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
             client.get(url)
 
     def test_multiple_channel_objects_request(self):
-        kwargs = {"app": "exemple", "content_type": "hour", "channel": "quarter"}
+        kwargs = {"app": "example", "content_type": "hour", "channel": "quarter"}
         url = reverse("dalec_fetch_content", kwargs=kwargs)
         client = Client()
         response = client.post(
@@ -352,7 +352,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         qs = self.content_model.objects.filter(
-            app="exemple", content_type="hour", channel="quarter"
+            app="example", content_type="hour", channel="quarter"
         )
         self.assertEqual(qs.filter(channel_object="2021-12-24 00:00").count(), 10)
         self.assertEqual(qs.filter(channel_object="2021-12-25 00:00").count(), 10)
@@ -367,7 +367,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(divs[0].string.strip(), "")
 
         # Let's query the external apps to fetch contents
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh(
             "hour", "half", channel_object="2021-12-24 00:00"
         )
@@ -384,7 +384,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
     def test_invalid_dalec_templatetags_call(self):
         t = Template(
             """{% load dalec %}
-        {% dalec "exemple" "hour" channel="quarter" channel_object="A" channel_objects='["B"]' %}
+        {% dalec "example" "hour" channel="quarter" channel_object="A" channel_objects='["B"]' %}
         """
         )
         with self.assertRaisesRegexp(ValueError, "channel_objects"):
@@ -393,7 +393,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
     def test_simple_dalec_templatetags_call(self):
         t = Template(
             """{% load dalec %}
-        {% dalec "exemple" "hour" channel="quarter" channel_object="2021-12-24" %}
+        {% dalec "example" "hour" channel="quarter" channel_object="2021-12-24" %}
         """
         )
         output = t.render(Context({}))
@@ -402,7 +402,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-24"]')
         html = (
             "{% load dalec %}"
-            "{% dalec 'exemple' 'hour' "
+            "{% dalec 'example' 'hour' "
             "channel='quarter' channel_objects='[\"2021-12-24\", \"2021-12-25\"]' %}"
         )
         output = Template(html).render(Context({}))
@@ -414,7 +414,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
     def test_ordered_by_dalec_templatetags(self):
         # Let's query the external apps to fetch contents
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh(
             "hour", "half", channel_object="2021-12-24 12:00"
         )
@@ -422,7 +422,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         # Ascending order by ID
         html = (
             "{% load dalec %}"
-            "{% dalec 'exemple' 'hour' channel='half' channel_object='2021-12-24 12:00' "
+            "{% dalec 'example' 'hour' channel='half' channel_object='2021-12-24 12:00' "
             "ordered_by='id' %}"
         )
         t_asc = Template(html)
@@ -435,7 +435,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         # Descending order by ID
         html = (
             "{% load dalec %}"
-            "{% dalec 'exemple' 'hour' channel='half' channel_object='2021-12-24 12:00' "
+            "{% dalec 'example' 'hour' channel='half' channel_object='2021-12-24 12:00' "
             "ordered_by='-id' %}"
         )
         t_desc = Template(html)
@@ -447,7 +447,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
     def test_missing_get_for(self):
         with self.assertRaisesRegexp(AttributeError, "MISSING_SETTING"):
-            app_settings.get_for("MISSING_SETTING", "exemple", raise_if_not_set=True)
+            app_settings.get_for("MISSING_SETTING", "example", raise_if_not_set=True)
 
     @override_settings(
         INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"]
@@ -479,7 +479,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         self.assertEqual(template_names, expected)
 
 
-class DalecExempleTests(TestCase):
+class DalecExampleTests(TestCase):
     @property
     def content_model(self):
         return apps.get_model(app_settings.CONTENT_MODEL)
@@ -489,14 +489,14 @@ class DalecExempleTests(TestCase):
         return apps.get_model(app_settings.FETCH_HISTORY_MODEL)
 
     def test_proxy_no_channel(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("french_educ")
         self.assertEqual(created, 10)
         self.assertEqual(updated, 0)
         self.assertEqual(deleted, 0)
 
     def test_proxy_channel_object(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("french_educ", "academy", "Grenoble")
         self.assertEqual(created, 10)
         self.assertEqual(updated, 0)
@@ -505,7 +505,7 @@ class DalecExempleTests(TestCase):
             self.assertEqual(c.content_data["libelle_academie"], "Grenoble")
 
     def test_proxy_channel_object_quoted(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         created, updated, deleted = proxy.refresh("hour", "quarter", "24/12/2021 12:00")
         self.assertEqual(created, 10)
         self.assertEqual(updated, 0)
@@ -514,7 +514,7 @@ class DalecExempleTests(TestCase):
             self.assertTrue("/" in c.channel_object)
 
     def test_view_no_channel_object(self):
-        kwargs = {"app": "exemple", "content_type": "french_educ"}
+        kwargs = {"app": "example", "content_type": "french_educ"}
         url = reverse("dalec_fetch_content", kwargs=kwargs)
         client = Client()
         response = client.get(url)
@@ -522,7 +522,7 @@ class DalecExempleTests(TestCase):
         self.assertEqual(self.content_model.objects.count(), 10)
 
     def test_invalid_channel_or_ct(self):
-        proxy = ProxyPool.get("exemple")
+        proxy = ProxyPool.get("example")
         with self.assertRaisesRegexp(ValueError, "requires a channel"):
             created, updated, deleted = proxy.refresh("hour")
         with self.assertRaisesRegexp(ValueError, "requires a channel"):

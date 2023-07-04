@@ -90,7 +90,7 @@ jobs:
 
       - name: Check mypy
         run: |
-          mypy -p dalec -p dalec_prime -p dalec_exemple
+          mypy -p dalec -p dalec_prime -p dalec_example
 
       - name: Download coverage data
         uses: actions/download-artifact@v3

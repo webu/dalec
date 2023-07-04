@@ -43,7 +43,7 @@ Contents are categorized via :
 * `content_type`: the type of contents we want to retrieve from this app 
   (eg. `issue`, `activity`, `commit`, `merge requests`…)
 * `channel`: some apps can be requested to get a more or less filtered contents. 
-  For exemple, in Gitlab, it's called "scope". You can retrieve issues from:
+  For example, in Gitlab, it's called "scope". You can retrieve issues from:
   * the whole site (`channel=None` and `channel_object=None` for us)
   * a specific group (`channel="group"` and `channel_object="<gitlab_group_id>"`)
   * a specific project (`channel="project"` and `channel_object="<gitlab_project_id>"`)
@@ -140,7 +140,7 @@ template by using the templatetag `dalec`:
 
 {% dalec app content_type [channel=None] [channel_object=None] [template=None] [ordered_by=None] %}
 
-real exemples:
+real examples:
 
 Retrieves last gitlab issues for a specific user:
 {% dalec "gitlab" "issue" channel="user" channel_object="doctor-who" %}
@@ -162,11 +162,11 @@ issue internal ID (default is `last_update_dt`):
 {% dalec "gitlab" "issue" channel="project" channel_object='42' ordered_by="-iid" %}
 ```
 
-### dalec_exemple
+### dalec_example
 
 An example app is packaged to get a working example which does not require any extra configuration.
 
-* add `dalec_exemple`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
+* add `dalec_example`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
 * run migrations
 * include dalec.urls inside your project's urls
 * add `dalec/js/main.js` inside your base.html or inside the template where you want to display the example
@@ -175,13 +175,13 @@ An example app is packaged to get a working example which does not require any e
 ```django
 {% load dalec %}
 <h1>Last quarters (very usefull, isn't it ?)</h1>
-{% dalec "exemple" "quarter" %}
+{% dalec "example" "quarter" %}
 
 <h1>Last updated establishments of french national education</h1>
-{% dalec "exemple" "french_educ" %}
+{% dalec "example" "french_educ" %}
 
 <h1>Last updated establishments of french national education depending of the Academy of Grenoble</h1>
-{% dalec "exemple" "french_educ" channel="academy" channel_object="Grenoble" %}
+{% dalec "example" "french_educ" channel="academy" channel_object="Grenoble" %}
 ```
 
 
@@ -191,8 +191,8 @@ This app have general settings which can be erased for all of it's children and 
 content type.
 
 * General setting format : `DALEC_SOMETHING`
-* override child version (it's app name, like gitlab for exemple): `DALEC_GITLAB_SOMETHING`
-* override content type version (gitlab's issues for exemple): `DALEC_GITLAB_ISSUE_SOMETHING`
+* override child version (it's app name, like gitlab for example): `DALEC_GITLAB_SOMETHING`
+* override content type version (gitlab's issues for example): `DALEC_GITLAB_ISSUE_SOMETHING`
 
 ### DALEC_NB_CONTENTS_KEPT
 
