@@ -14,18 +14,18 @@ from django.utils.timezone import now
 
 from dalec.proxy import Proxy
 
-__all__ = ["ExempleProxy"]
+__all__ = ["ExampleProxy"]
 
 
-class ExempleProxy(Proxy):
+class ExampleProxy(Proxy):
     """
-    Just a proxy exemple wich just fetch the last :
+    Just a proxy example wich just fetch the last :
     * quarter: quarters or halfs of an hour from "now" or from a specific datetime
     * french_educ: last updated establishments of french national education. Available channels:
         * academy: retrieve for a specific academy name (eg: « Grenoble »)
     """
 
-    app = "exemple"
+    app = "example"
 
     def _fetch(
         self, nb: int, content_type: str, channel: str, channel_object: str

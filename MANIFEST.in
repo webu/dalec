@@ -2,7 +2,7 @@ include AUTHORS
 include MANIFEST.in
 include *.md
 graft dalec
-graft dalec_exemple
+graft dalec_example
 graft dalec_prime
 global-exclude __pycache__
 global-exclude *.py[co]

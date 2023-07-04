@@ -29,7 +29,7 @@ def dalec(
 ) -> str:
     """
     Show last N contents for a specific app+content_type (and optionnaly channel+channel_object)
-    Usage exemple:
+    Usage example:
 
     {% load dalec %}
 

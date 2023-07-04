@@ -14,7 +14,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "tests",
-    "dalec_exemple",
+    "dalec_example",
     "dalec_prime",
     "dalec",
 ]
