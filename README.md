@@ -8,6 +8,7 @@
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![semver](https://img.shields.io/badge/semver-2.0.0-green)](https://semver.org/)
+[![Documentation Status](https://readthedocs.org/projects/dalec/badge/?version=latest)](https://dalec.readthedocs.io/en/latest/?badge=latest)
 
 Django Aggregator of a Lot of External Contents (DALEC) is a generic app to aggregate contents from various
 external sources. Purposes are to manage (retrieve, clean, display…) those contents in a
