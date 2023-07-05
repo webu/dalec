@@ -87,6 +87,10 @@ class ProxyPool:
             raise ValueError("No proxy registered for app {app}".format(app=app))
         return cls._proxies[app]
 
+    @classmethod
+    def get_registered_apps(cls) -> Tuple[str, ...]:
+        return tuple(cls._proxies.keys())
+
 
 class ProxyMeta(type):
     """
