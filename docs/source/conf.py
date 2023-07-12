@@ -11,6 +11,7 @@
 import os
 import sys
 
+# Django imports
 import django
 
 sys.path.insert(0, os.path.abspath("../.."))

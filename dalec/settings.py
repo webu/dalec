@@ -1,10 +1,16 @@
+# Future imports
 from __future__ import annotations
+
+# Standard libs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Any, Optional
 
+# Standard libs
 import sys
+
+# Django imports
 from django.conf import settings
 
 

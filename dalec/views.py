@@ -1,7 +1,9 @@
+# Future imports
 from __future__ import annotations
 
-import json
+# Standard libs
 from copy import copy
+import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,24 +12,29 @@ if TYPE_CHECKING:
     from django.http import HttpRequest
     from django.db.models.query import QuerySet
 
+# Standard libs
 import hashlib
 import urllib.parse
 
+# Django imports
 from django.apps import apps
 from django.http import HttpResponse
 from django.template.loader import select_template
 from django.urls import reverse
 
 try:
+    # Django imports
     from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
     from django.utils.functional import classproperty  # type: ignore
 
+# Django imports
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 
+# DALEC imports
 from dalec import settings as app_settings
 from dalec.proxy import ProxyPool
 

@@ -1,17 +1,24 @@
+# Future imports
 from __future__ import annotations
 
+# Standard libs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Optional, Dict
 
-from datetime import datetime, timedelta
+# Standard libs
+from datetime import datetime
+from datetime import timedelta
 
-import requests
+# Django imports
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware, now
+from django.utils.timezone import make_aware
+from django.utils.timezone import now
 
+# DALEC imports
 from dalec.proxy import Proxy
+import requests
 
 __all__ = ["ExampleProxy"]
 

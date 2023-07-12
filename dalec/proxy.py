@@ -1,5 +1,7 @@
+# Future imports
 from __future__ import annotations
 
+# Standard libs
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -9,17 +11,21 @@ if TYPE_CHECKING:
     from django.db.models.query import QuerySet
     from dalec.models import ContentBase, FetchHistoryBase
 
+# Standard libs
 from datetime import timedelta
 from importlib import import_module
 
+# Django imports
 from django.apps import apps
 from django.utils import timezone
 
 try:
+    # Django imports
     from django.utils.decorators import classproperty  # type: ignore
 except ImportError:
     from django.utils.functional import classproperty  # type: ignore
 
+# DALEC imports
 from dalec import settings as app_settings
 
 __all__ = ["ProxyPool", "Proxy"]

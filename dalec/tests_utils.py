@@ -1,7 +1,10 @@
+# Standard libs
 from importlib import reload
 
+# Django imports
 from django.apps import apps
 
+# DALEC imports
 from dalec import settings as app_settings
 from dalec.proxy import ProxyPool
 
