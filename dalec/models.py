@@ -23,9 +23,7 @@ class FetchHistoryBase(models.Model):
         _("last fetch datetime"), auto_now=True, blank=False, null=False
     )
     app = models.CharField(_("dalec app"), max_length=50, null=False, blank=False)
-    content_type = models.CharField(
-        _("content type"), max_length=50, null=True, blank=True
-    )
+    content_type = models.CharField(_("content type"), max_length=50, null=True, blank=True)
     channel = models.CharField(_("channel"), max_length=50, null=True, blank=True)
     channel_object = models.CharField(
         _("channel app object id"), max_length=255, null=True, blank=True
@@ -61,9 +59,7 @@ class ContentBase(models.Model):
         db_index=True,
     )
     app = models.CharField(_("dalec app"), max_length=50, null=False, blank=False)
-    content_type = models.CharField(
-        _("content type"), max_length=50, null=True, blank=True
-    )
+    content_type = models.CharField(_("content type"), max_length=50, null=True, blank=True)
     channel = models.CharField(_("channel"), max_length=50, null=True, blank=True)
     channel_object = models.CharField(
         _("channel app object id"), max_length=255, null=True, blank=True

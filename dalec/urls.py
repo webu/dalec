@@ -34,9 +34,7 @@ urlpatterns = [
         name="dalec_fetch_content",
     ),
     re_path(
-        (
-            "(?P<app>[a-z][a-z0-9_-]+)/(?P<content_type>[a-z][a-z0-9_-]+)"  # required part
-        ),
+        "(?P<app>[a-z][a-z0-9_-]+)/(?P<content_type>[a-z][a-z0-9_-]+)",  # required part
         fetch_content_view,
         name="dalec_fetch_content",
     ),

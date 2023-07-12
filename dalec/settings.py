@@ -17,9 +17,7 @@ def get_setting(
     setting = "DALEC_" + setting
     if not hasattr(settings, setting):
         if raise_if_not_set:
-            raise ValueError(
-                "{setting} is required in your settings.py".format(setting=setting)
-            )
+            raise ValueError("{setting} is required in your settings.py".format(setting=setting))
         return default
     return getattr(settings, setting)
 

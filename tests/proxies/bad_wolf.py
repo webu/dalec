@@ -7,6 +7,4 @@ class BadWolfProxy(Proxy):
     """
 
     def _fetch(self, *args, **kwargs):
-        print(
-            "I can see everything. All that is. All that was. All that ever could be."
-        )
+        print("I can see everything. All that is. All that was. All that ever could be.")

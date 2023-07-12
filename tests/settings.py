@@ -24,9 +24,7 @@ if django.VERSION < (3, 2):
 
 ROOT_URLCONF = "tests.urls"
 
-TEMPLATES = [
-    {"BACKEND": "django.template.backends.django.DjangoTemplates", "APP_DIRS": True}
-]
+TEMPLATES = [{"BACKEND": "django.template.backends.django.DjangoTemplates", "APP_DIRS": True}]
 
 DATABASES = {
     "default": {

@@ -31,17 +31,13 @@ class ExampleProxy(Proxy):
     ) -> Dict[str, dict]:
         if content_type == "hour":
             if not channel or channel not in ("quarter", "half"):
-                raise ValueError(
-                    "%s requires a channel ('quarter' or 'half')" % content_type
-                )
+                raise ValueError("%s requires a channel ('quarter' or 'half')" % content_type)
             return self._fetch_hour(nb, channel, channel_object)
         if content_type == "french_educ":
             return self._fetch_french_educ(nb, channel, channel_object)
         raise ValueError("Invalid content_type %s" % content_type)
 
-    def _fetch_hour(
-        self, nb: int, channel: str, channel_object: str
-    ) -> Dict[str, dict]:
+    def _fetch_hour(self, nb: int, channel: str, channel_object: str) -> Dict[str, dict]:
         """
         Return the last N quarters or halfs of an hour from "now" or from a specific datetime
         """
@@ -116,11 +112,7 @@ class ExampleProxy(Proxy):
                 **record,
                 # and add our own required fields
                 "id": id,
-                "last_update_dt": parse_datetime(
-                    "%s 00:00:00Z" % record["date_maj_ligne"]
-                ),
-                "creation_dt": parse_datetime(
-                    "%s 00:00:00Z" % record["date_ouverture"]
-                ),
+                "last_update_dt": parse_datetime("%s 00:00:00Z" % record["date_maj_ligne"]),
+                "creation_dt": parse_datetime("%s 00:00:00Z" % record["date_ouverture"]),
             }
         return contents

@@ -80,9 +80,7 @@ class FetchContentView(ListView):
         """
         Get the number of items to paginate by, or ``None`` for no pagination.
         """
-        return app_settings.get_for(
-            "NB_CONTENTS_KEPT", self.dalec_app, self.content_type
-        )
+        return app_settings.get_for("NB_CONTENTS_KEPT", self.dalec_app, self.content_type)
 
     def post(self, request: HttpRequest, *args: tuple, **kwargs: dict) -> HttpResponse:
         if request.body:
@@ -97,9 +95,7 @@ class FetchContentView(ListView):
         or a 204 response if nothing need an update (cache used or still the same contents)
         """
         if self.kwargs.get("channel_object", None):
-            self.dalec_channel_objects = [
-                urllib.parse.unquote(self.kwargs["channel_object"])
-            ]
+            self.dalec_channel_objects = [urllib.parse.unquote(self.kwargs["channel_object"])]
         refreshed = self.refresh_contents()
         if not refreshed:
             # nothing to refresh, our content is already the updated one
@@ -154,9 +150,7 @@ class FetchContentView(ListView):
         tpl_names = []
         if self.dalec_channel:
             kwargs["channel"] = self.dalec_channel
-            tpl_names.append(
-                "dalec/{app}/{content_type}-{channel}-{type}.html".format(**kwargs)
-            )
+            tpl_names.append("dalec/{app}/{content_type}-{channel}-{type}.html".format(**kwargs))
         tpl_names += [
             "dalec/{app}/{content_type}-{type}.html".format(**kwargs),
             "dalec/{app}/{type}.html".format(**kwargs),
@@ -171,9 +165,7 @@ class FetchContentView(ListView):
         if self.dalec_template:
             tpl_names.insert(
                 0,
-                "dalec/{app}/{tpl}-{type}.html".format(
-                    **{**kwargs, "tpl": self.dalec_template}
-                ),
+                "dalec/{app}/{tpl}-{type}.html".format(**{**kwargs, "tpl": self.dalec_template}),
             )
         return tpl_names
 
@@ -207,9 +199,7 @@ class FetchContentView(ListView):
                 and self.request.headers.get("content-type") == "application/json",
             }
         )
-        temp_id = "{app}-{content_type}-{channel}-{json_channel_objects}".format(
-            **context
-        )
+        temp_id = "{app}-{content_type}-{channel}-{json_channel_objects}".format(**context)
         context["id"] = hashlib.md5(temp_id.encode("utf-8")).hexdigest()
         if self.dalec_template:
             context["url"] += "?template=%s" % self.dalec_template
@@ -227,12 +217,8 @@ class FetchContentView(ListView):
                 created, updated, deleted = proxy.refresh(
                     self.dalec_content_type, self.dalec_channel, channel_object
                 )
-                something_changed = something_changed or bool(
-                    created or updated or deleted
-                )
+                something_changed = something_changed or bool(created or updated or deleted)
         else:
-            created, updated, deleted = proxy.refresh(
-                self.dalec_content_type, self.dalec_channel
-            )
+            created, updated, deleted = proxy.refresh(self.dalec_content_type, self.dalec_channel)
             something_changed = bool(created or updated or deleted)
         return something_changed

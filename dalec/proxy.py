@@ -52,14 +52,8 @@ class ProxyPool:
             raise ValueError("Your proxy must extends `dalec.proxy.Proxy`")
         if not proxy.app:
             raise ValueError("Your proxy must set it's app name in its `app` attribute")
-        if (
-            proxy.app in cls._proxies
-            and not override
-            and cls._proxies[proxy.app] != proxy
-        ):
-            raise ValueError(
-                'A proxy is already registered for app "{app}"'.format(app=proxy.app)
-            )
+        if proxy.app in cls._proxies and not override and cls._proxies[proxy.app] != proxy:
+            raise ValueError('A proxy is already registered for app "{app}"'.format(app=proxy.app))
         cls._proxies[proxy.app] = proxy
 
     @classmethod
@@ -97,9 +91,7 @@ class ProxyMeta(type):
     Meta class to autoregister Proxy class when an app inherit from our Proxy abstact class.
     """
 
-    def __new__(
-        cls: Type[ProxyMeta], name: str, bases: tuple, attrs: dict
-    ) -> ProxyMeta:
+    def __new__(cls: Type[ProxyMeta], name: str, bases: tuple, attrs: dict) -> ProxyMeta:
         """
         Build the new Proxy and auto-register it in the pool
         Auto register
@@ -140,9 +132,7 @@ class Proxy(metaclass=ProxyMeta):
         channel_object: Optional[str] = None,
         force: Optional[bool] = False,
         dj_channel_obj: Optional[Model] = None,
-    ) -> Union[
-        Tuple[int, int, int], Tuple[Literal[False], Literal[False], Literal[False]]
-    ]:
+    ) -> Union[Tuple[int, int, int], Tuple[Literal[False], Literal[False], Literal[False]]]:
         """
         Fetch updated contents from the source and update/create it into the DB.
         Then, if some contents has been created, delete oldests contents which are not anymore
@@ -154,9 +144,7 @@ class Proxy(metaclass=ProxyMeta):
             "channel": channel,
             "channel_object": channel_object,
         }
-        last_fetch = (
-            None if force else self.get_last_fetch(**dalec_kwargs)  # type: ignore
-        )
+        last_fetch = None if force else self.get_last_fetch(**dalec_kwargs)  # type: ignore
         if last_fetch:
             too_old = timezone.now() - timedelta(seconds=app_settings.TTL)
             if last_fetch.last_fetch_dt > too_old:
@@ -188,9 +176,7 @@ class Proxy(metaclass=ProxyMeta):
             if res:
                 nb_created += 1
         # exterminate the oldest ones if some new contents have been created
-        nb_deleted = (
-            0 if not nb_created else self.exterminate(**dalec_kwargs)  # type: ignore
-        )
+        nb_deleted = 0 if not nb_created else self.exterminate(**dalec_kwargs)  # type: ignore
 
         return nb_created, nb_updated, nb_deleted
 

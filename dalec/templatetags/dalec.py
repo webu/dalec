@@ -53,9 +53,7 @@ def dalec(
     {% dalec "gitlab" "issue" channel="project" channel_object='42' ordered_by="-iid" %}
     """
     if channel_object and channel_objects:
-        raise ValueError(
-            "You can not use channel_object AND channel_objects at the same time"
-        )
+        raise ValueError("You can not use channel_object AND channel_objects at the same time")
     dalec_view = FetchContentView(_dalec_template=template)
     if channel_objects:
         list_channel_objects = json.loads(channel_objects)

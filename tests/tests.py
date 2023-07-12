@@ -34,23 +34,15 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         reload(app_settings)
         self.assertEqual(app_settings.NB_CONTENTS_KEPT, 10)
         self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "example"), 15)
-        self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "example", "quarter"), 15
-        )
-        self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "example", "french_educ"), 20
-        )
-        self.assertEqual(
-            app_settings.get_for("NB_CONTENTS_KEPT", "example", "content-type"), 30
-        )
+        self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "example", "quarter"), 15)
+        self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "example", "french_educ"), 20)
+        self.assertEqual(app_settings.get_for("NB_CONTENTS_KEPT", "example", "content-type"), 30)
 
     @override_settings(
         INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"]
     )
     def test_missing_dalec_prime_content_model(self):
-        with self.assertRaisesRegex(
-            ValueError, "You must define a DALEC_CONTENT_MODEL"
-        ):
+        with self.assertRaisesRegex(ValueError, "You must define a DALEC_CONTENT_MODEL"):
             reload(app_settings)
 
     @override_settings(
@@ -58,9 +50,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         DALEC_CONTENT_MODEL="tests.Content",
     )
     def test_missing_dalec_prime_history_model(self):
-        with self.assertRaisesRegex(
-            ValueError, "You must define a DALEC_FETCH_HISTORY_MODEL"
-        ):
+        with self.assertRaisesRegex(ValueError, "You must define a DALEC_FETCH_HISTORY_MODEL"):
             reload(app_settings)
 
     @override_settings(
@@ -219,9 +209,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
 
     def test_ordering_and_latest(self):
         proxy = ProxyPool.get("example")
-        created, updated, deleted = proxy.refresh(
-            "hour", "quarter", "1985-07-02 21:45:00Z"
-        )
+        created, updated, deleted = proxy.refresh("hour", "quarter", "1985-07-02 21:45:00Z")
         first_ordered = self.content_model.objects.first()
         latest_chrono = self.content_model.objects.latest()
         self.assertEqual(first_ordered.pk, latest_chrono.pk)
@@ -408,9 +396,7 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         output = Template(html).render(Context({}))
         soup = BeautifulSoup(output, "html.parser")
         divs = soup.find_all("div")
-        self.assertEqual(
-            divs[0].attrs["data-channel-objects"], '["2021-12-24", "2021-12-25"]'
-        )
+        self.assertEqual(divs[0].attrs["data-channel-objects"], '["2021-12-24", "2021-12-25"]')
 
     def test_ordered_by_dalec_templatetags(self):
         # Let's query the external apps to fetch contents
@@ -453,18 +439,14 @@ class DalecTests(DalecTestCaseMixin, TestCase):
         INSTALLED_APPS=[app for app in settings.INSTALLED_APPS if app != "dalec_prime"]
     )
     def test_missing_history_model_and_dalec_prime(self):
-        with self.assertRaisesRegexp(
-            ValueError, "adding dalec_prime to your INSTALLED_APPS"
-        ):
+        with self.assertRaisesRegexp(ValueError, "adding dalec_prime to your INSTALLED_APPS"):
             reload(app_settings)
 
     @override_settings(DALEC_CSS_FRAMEWORK="bootstrap")
     def test_css_framework_template_names(self):
         reload(app_settings)
         dalec_view = FetchContentView(_dalec_template=None)
-        dalec_view.setup(
-            None, app="app", content_type="content_type", channel="channel", page=1
-        )
+        dalec_view.setup(None, app="app", content_type="content_type", channel="channel", page=1)
         template_names = dalec_view.get_template_names()
         expected = [
             "dalec/app/bootstrap/content_type-channel-list.html",
