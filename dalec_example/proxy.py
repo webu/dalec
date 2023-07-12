@@ -1,16 +1,15 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Optional, Dict
 
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 import requests
-
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware
-from django.utils.timezone import now
+from django.utils.timezone import make_aware, now
 
 from dalec.proxy import Proxy
 
