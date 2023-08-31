@@ -3,6 +3,9 @@
 function dalec_fetch_content(container){
     const data = container.dataset ;
     container.classList.add("dalec-loading");
+    if (data.channelObjects !== undefined){
+        data.channelObjects = JSON.parse(data.channelObjects)
+    }
     fetch(
         data.url,
         {
@@ -13,7 +16,7 @@ function dalec_fetch_content(container){
             },
             // cache: "no-cache",
             body: JSON.stringify(
-                {"channelObjects": JSON.parse(data.channelObjects), "orderedBy": data.orderedBy}
+                {"channelObjects": data.channelObjects, "orderedBy": data.orderedBy}
             ),
             keepalive: true,
         }
