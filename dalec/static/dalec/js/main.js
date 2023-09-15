@@ -8,6 +8,7 @@ function dalec_fetch_content(container){
     let channelObjects = container.dataset.channelObjects;
 
     container.classList.add("dalec-loading");
+    container.classList.remove("dalec-loading-error");
     if (channelObjects !== undefined){
         channelObjects = JSON.parse(channelObjects)
     }
@@ -27,6 +28,8 @@ function dalec_fetch_content(container){
         }
     ).then(function(response){
         if (!response.ok) {
+            container.classList.remove("dalec-loading");
+            container.classList.add("dalec-loading-error");
             console.error(`HTTP error ${response.status} while fetching ${url}`);
             return ;
         }
