@@ -1,13 +1,18 @@
 
 
 function dalec_fetch_content(container){
-    const data = container.dataset ;
+    const [ orderedBy, url ] = [
+        container.dataset.orderedBy,
+        container.dataset.url
+    ];
+    let channelObjects = container.dataset.channelObjects;
+
     container.classList.add("dalec-loading");
-    if (data.channelObjects !== undefined){
-        data.channelObjects = JSON.parse(data.channelObjects)
+    if (channelObjects !== undefined){
+        channelObjects = JSON.parse(channelObjects)
     }
     fetch(
-        data.url,
+        url,
         {
             method: "POST",
             headers: {
@@ -16,13 +21,13 @@ function dalec_fetch_content(container){
             },
             // cache: "no-cache",
             body: JSON.stringify(
-                {"channelObjects": data.channelObjects, "orderedBy": data.orderedBy}
+                {"channelObjects": channelObjects, "orderedBy": orderedBy}
             ),
             keepalive: true,
         }
     ).then(function(response){
         if (!response.ok) {
-            console.error(`HTTP error ${response.status} while fetching ${data.url}`);
+            console.error(`HTTP error ${response.status} while fetching ${url}`);
             return ;
         }
         if (response.status === 204) {
