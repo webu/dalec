@@ -43,3 +43,5 @@ function dalec_fetch_content(container){
         });
     });
 }
+
+module.exports = dalec_fetch_content;
