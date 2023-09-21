@@ -4,7 +4,8 @@
   "description": "Tests du code JS de Dalec",
   "main": "index.js",
   "scripts": {
-    "fmt": "npx prettier . --write",
+    "fmt-write": "npx prettier ../dalec/ --write",
+    "fmt-check": "npx prettier ../dalec/ --check",
     "test": "jest"
   },
   "author": "",
