@@ -28,10 +28,12 @@ This app is tested to runs with:
 
 To ensure code quality and consistency:
 
-* Formatted with [black](https://pypi.org/project/black/)
-* Validated with [flake8](https://pypi.org/project/flake8/). 
-* Static types checked with [mypy](https://pypi.org/project/mypy/)
-* Tests coverage checked with [coverage](https://pypi.org/project/coverage/) (100% tested)
+* Python formatted with [black](https://pypi.org/project/black/)
+* Python validated with [flake8](https://pypi.org/project/flake8/). 
+* Python static types checked with [mypy](https://pypi.org/project/mypy/)
+* Python tests coverage checked with [coverage](https://pypi.org/project/coverage/) (100% tested)
+* JS tested with [jest](https://jestjs.io/fr/)
+* JS formatted with [prettier](https://prettier.io/)
 * Tests runned in local via [tox](https://pypi.org/project/tox/) and on github via [github actions workflow](https://docs.github.com/en/actions/using-workflows)
 * versionned with [semver](https://semver.org) logic
 
@@ -81,7 +83,7 @@ and keep a KISS Model, we need those duplicates.
 * 📫 dalec-imap: get emails from imap instance
 * 🐥 dalec-mastodon: get toots from a mastodon instance
 * 📺 dalec-peertube: get last uploaded videos from a peertube instance
-* 🌵 dalec-git: get last commits from a git repository
+* 🌵 dalec-git: get last commits, branches, tags from a git repository
 * 🐱 dalec-github: get issues, pull-requests, activity from github
 * 🐦 dalec-twitter: get tweets from twitter
 * 🎞 dalec-youtube: get last uploaded videos from youtube

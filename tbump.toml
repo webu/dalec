@@ -48,7 +48,7 @@ tag_template = "{new_version}"
 [[file]]
 src = "dalec/__init__.py"
 [[file]]
-src = "nodejs-env/package.json"
+src = "tests_js/package.json"
 
 # You can specify a list of commands to
 # run after the files have been patched
