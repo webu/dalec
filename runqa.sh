@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd tests_js
-nodeenv --prebuilt -p
+nodeenv --prebuilt -p lts
 npm i
 npm run fmt-check
 cd ../
