@@ -1,4 +1,4 @@
-function dalec_fetch_content(container) {
+export function fetch_content(container) {
   const [orderedBy, url] = [container.dataset.orderedBy, container.dataset.url];
   let channelObjects = container.dataset.channelObjects;
 
@@ -36,5 +36,3 @@ function dalec_fetch_content(container) {
     });
   });
 }
-
-module.exports = dalec_fetch_content;
