@@ -110,4 +110,4 @@ class ContentBase(models.Model):
         ordering = ("-last_update_dt",)
         get_latest_by = "last_update_dt"
         abstract = True
-        index_together = (("app", "content_type", "channel", "channel_object"),)
+        indexes = [models.Index(fields=["app", "content_type", "channel", "channel_object"])]
