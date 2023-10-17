@@ -32,3 +32,5 @@ DATABASES = {
         "NAME": os.path.join(BASE_PATH, "tests.sqlite3"),
     }
 }
+
+STATIC_URL = "/static/"

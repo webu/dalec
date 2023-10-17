@@ -1,8 +1,8 @@
-const dalec_fetch_content = require("../dalec/static/dalec/js/main.js");
+import { fetch_content } from "../dalec/static/dalec/js/main.js";
 
 let dalecContainer: HTMLElement;
 
-describe("dalec_fetch_content", () => {
+describe("fetch_content", () => {
   describe("without channelObjects nor orderBy", () => {
     beforeAll(() => {
       document.body.innerHTML = `
@@ -16,7 +16,7 @@ describe("dalec_fetch_content", () => {
         });
       }) as jest.Mock;
       dalecContainer = document.getElementById("dalec-1");
-      dalec_fetch_content(dalecContainer);
+      fetch_content(dalecContainer);
     });
 
     it("should fetch url", () => {
@@ -52,7 +52,7 @@ describe("dalec_fetch_content", () => {
         }),
       ) as jest.Mock;
       dalecContainer = document.getElementById("dalec-1");
-      dalec_fetch_content(dalecContainer);
+      fetch_content(dalecContainer);
     });
 
     it("should call fetch with channelObjects and orderedBy", () => {
@@ -76,7 +76,7 @@ describe("dalec_fetch_content", () => {
         }),
       ) as jest.Mock;
       dalecContainer = document.getElementById("dalec-1");
-      dalec_fetch_content(dalecContainer);
+      fetch_content(dalecContainer);
     });
 
     it("should call fetch with channelObjects", () => {
@@ -101,7 +101,7 @@ describe("dalec_fetch_content", () => {
         }),
       ) as jest.Mock;
       dalecContainer = document.getElementById("dalec-1");
-      dalec_fetch_content(dalecContainer);
+      fetch_content(dalecContainer);
     });
 
     it("should call fetch with orderedBy", () => {
@@ -125,7 +125,7 @@ describe("dalec_fetch_content", () => {
         }),
       ) as jest.Mock;
       dalecContainer = document.getElementById("dalec-1");
-      dalec_fetch_content(dalecContainer);
+      fetch_content(dalecContainer);
     });
 
     it("should not have the loading css class", () => {
