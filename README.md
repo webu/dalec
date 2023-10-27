@@ -170,7 +170,6 @@ An example app is packaged to get a working example which does not require any e
 * add `dalec_example`, `dalec_prime` and `dalec` to `INSTALLED_APPS`
 * run migrations
 * include dalec.urls inside your project's urls
-* add `dalec/js/main.js` inside your base.html or inside the template where you want to display the example
 * add those fragments of code inside the template where you want to display the example:
 
 ```django
