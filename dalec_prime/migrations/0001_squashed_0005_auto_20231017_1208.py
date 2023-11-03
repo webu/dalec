@@ -164,7 +164,7 @@ class Migration(migrations.Migration):
                 "indexes": [
                     models.Index(
                         fields=["app", "content_type", "channel", "channel_object"],
-                        name="content",
+                        name="dalec_prime_app_636e7d_idx",
                     )
                 ],
             },
