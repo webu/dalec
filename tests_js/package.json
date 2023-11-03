@@ -1,6 +1,6 @@
 {
   "name": "dalec",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Tests du code JS de Dalec",
   "main": "index.js",
   "scripts": {
